@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Hlime product detail prototype.">
+  <title>Product Detail — Hlime Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="menu">
+  <div data-site-header></div>
+  <main id="main-content">
+    <section class="section">
+      <div class="container">
+        <a class="button button--text" href="menu.html" data-vi="Quay lại menu" data-ko="메뉴로 돌아가기">Quay lại menu</a>
+        <div class="product-detail" data-product-detail></div>
+      </div>
+    </section>
+
+    <section class="section section--white" data-product-related>
+      <div class="container">
+        <div class="section-heading">
+          <div class="section-heading__copy">
+            <span class="eyebrow" data-vi="Gợi ý thêm" data-ko="함께 보기">Gợi ý thêm</span>
+            <h2 data-vi="Có thể bạn cũng thích." data-ko="이런 디저트도 좋아하실 거예요.">Có thể bạn cũng thích.</h2>
+          </div>
+        </div>
+        <div class="product-grid" data-everyday-products></div>
+      </div>
+    </section>
+  </main>
+  <div data-site-footer></div>
+  <script src="script.js"></script>
+</body>
+</html>

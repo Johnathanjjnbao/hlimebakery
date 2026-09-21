@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Hlime celebration cake prototype.">
+  <title>Celebration — Hlime Prototype</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="celebration">
+  <div data-site-header></div>
+  <main id="main-content">
+    <header class="page-hero">
+      <div class="container">
+        <span class="eyebrow" data-vi="Celebration Cakes" data-ko="셀러브레이션 케이크">Celebration Cakes</span>
+        <h1 data-vi="Dành cho những ngày muốn nhớ thật lâu." data-ko="오래 기억하고 싶은 날을 위해.">Dành cho những ngày muốn nhớ thật lâu.</h1>
+        <p data-vi="Một mẫu bánh mềm mại, dễ tùy chọn và đủ trang trọng cho sinh nhật hoặc ngày kỷ niệm." data-ko="생일과 기념일에 어울리는 우아하고 편안한 디자인의 케이크입니다.">Một mẫu bánh mềm mại, dễ tùy chọn và đủ trang trọng cho sinh nhật hoặc ngày kỷ niệm.</p>
+      </div>
+    </header>
+
+    <section class="section section--white" style="padding-top:2rem">
+      <div class="container celebration-layout">
+        <div class="celebration-visual">
+          <div class="celebration-visual__image" data-demo-admin="celebration-flavor-media"><img src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?auto=format&fit=crop&w=1300&q=88" data-celebration-image data-flavor="vanilla-berry" data-alt-vi="Bánh Celebration Vanilla & Berry — ảnh demo" data-alt-ko="바닐라 & 베리 셀러브레이션 케이크 — 데모 이미지" alt="Bánh Celebration Vanilla & Berry — ảnh demo"></div>
+          <figure class="celebration-detail" data-demo-admin="celebration-editorial-media">
+            <img src="https://images.unsplash.com/photo-1519915028121-7d3463d20b13?auto=format&fit=crop&w=700&q=84" data-alt-vi="Chi tiết hoàn thiện bánh Celebration — ảnh demo" data-alt-ko="셀러브레이션 케이크 마감 디테일 — 데모 이미지" alt="Chi tiết hoàn thiện bánh Celebration — ảnh demo">
+            <figcaption><span data-vi="Hoàn thiện thủ công" data-ko="수작업으로 완성">Hoàn thiện thủ công</span><small data-vi="Ảnh và nội dung demo" data-ko="데모 이미지 및 콘텐츠">Ảnh và nội dung demo</small></figcaption>
+          </figure>
+          <div class="demo-note"><span aria-hidden="true">ⓘ</span><span data-vi="Mẫu bánh, giá, size, flavor và ảnh đều là demo; sau này quản lý qua Products." data-ko="케이크, 가격, 사이즈, 맛, 이미지는 모두 데모이며 추후 Products에서 관리됩니다.">Mẫu bánh, giá, size, flavor và ảnh đều là demo; sau này quản lý qua Products.</span></div>
+        </div>
+        <form class="form-card" data-celebration-form>
+          <span class="eyebrow" data-vi="Rose Garden Cake · Demo" data-ko="로즈 가든 케이크 · 데모">Rose Garden Cake · Demo</span>
+          <h2 data-vi="Chọn bánh của bạn" data-ko="케이크 옵션 선택">Chọn bánh của bạn</h2>
+          <p class="muted" data-vi="Giá từ 650.000₫. Prototype chỉ thêm lựa chọn vào Cart, chưa gửi order thật." data-ko="650,000₫부터. 프로토타입에서는 장바구니에만 담기며 실제 주문은 전송되지 않습니다.">Giá từ 650.000₫. Prototype chỉ thêm lựa chọn vào Cart, chưa gửi order thật.</p>
+
+          <div class="field-grid">
+            <div class="field">
+              <label for="cake-size" data-vi="Size" data-ko="사이즈">Size</label>
+              <select id="cake-size" name="size" required>
+                <option value="14" data-vi="14 cm · 4–6 người" data-ko="14 cm · 4–6인">14 cm · 4–6 người</option>
+                <option value="18" data-vi="18 cm · 8–10 người" data-ko="18 cm · 8–10인">18 cm · 8–10 người</option>
+                <option value="22" data-vi="22 cm · 12–16 người" data-ko="22 cm · 12–16인">22 cm · 12–16 người</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="cake-flavor" data-vi="Flavor" data-ko="맛">Flavor</label>
+              <select id="cake-flavor" name="flavor" required>
+                <option value="vanilla-berry" data-vi="Vanilla & Berry" data-ko="바닐라 & 베리">Vanilla & Berry</option>
+                <option value="chocolate-64" data-vi="Chocolate 64%" data-ko="64% 초콜릿">Chocolate 64%</option>
+                <option value="earl-grey-peach" data-vi="Earl Grey & Peach" data-ko="얼그레이 & 복숭아">Earl Grey & Peach</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="cake-date" data-vi="Ngày cần bánh" data-ko="필요한 날짜">Ngày cần bánh</label>
+            <input id="cake-date" name="date" type="date" required>
+          </div>
+          <div class="field">
+            <label for="cake-note" data-vi="Lời nhắn / ghi chú" data-ko="메시지 / 요청사항">Lời nhắn / ghi chú</label>
+            <textarea id="cake-note" name="note" maxlength="180" data-placeholder-vi="Ví dụ: Happy Birthday Linh · tone hồng nhẹ" data-placeholder-ko="예: Happy Birthday Mina · 부드러운 핑크 톤"></textarea>
+          </div>
+          <button class="button button--primary" type="submit" style="width:100%" data-vi="Thêm Celebration vào giỏ" data-ko="셀러브레이션 케이크 담기">Thêm Celebration vào giỏ</button>
+        </form>
+      </div>
+    </section>
+
+    <section class="section celebration-steps">
+      <div class="container">
+        <div class="section-heading"><div class="section-heading__copy"><span class="eyebrow" data-vi="Cách đặt" data-ko="주문 순서">Cách đặt</span><h2 data-vi="Ba bước rõ ràng." data-ko="세 단계로 간단하게.">Ba bước rõ ràng.</h2></div></div>
+        <div class="why-grid celebration-steps__grid">
+          <article class="why-card"><span class="why-card__number">01</span><h3 data-vi="Chọn bánh" data-ko="케이크 선택">Chọn bánh</h3><p data-vi="Chọn size, flavor, ngày và lời nhắn." data-ko="사이즈, 맛, 날짜와 메시지를 선택합니다.">Chọn size, flavor, ngày và lời nhắn.</p></article>
+          <article class="why-card"><span class="why-card__number">02</span><h3 data-vi="Chọn cách nhận" data-ko="수령 방법 선택">Chọn cách nhận</h3><p data-vi="Pickup tại cửa hàng hoặc Delivery." data-ko="매장 픽업 또는 배송을 선택합니다.">Pickup tại cửa hàng hoặc Delivery.</p></article>
+          <article class="why-card"><span class="why-card__number">03</span><h3 data-vi="Hlime xác nhận" data-ko="Hlime 확인">Hlime xác nhận</h3><p data-vi="Order thật sau này sẽ ở PENDING trước khi Hlime chuyển sang CONFIRMED." data-ko="실제 주문은 PENDING 상태 후 Hlime 확인을 거쳐 CONFIRMED로 변경됩니다.">Order thật sau này sẽ ở PENDING trước khi Hlime chuyển sang CONFIRMED.</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div data-site-footer></div>
+  <script src="script.js"></script>
+</body>
+</html>

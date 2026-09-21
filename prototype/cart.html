@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Giỏ hàng prototype Hlime với luồng nhận tại cửa hàng hoặc giao hàng." />
+    <title>Giỏ hàng — Hlime Bakery & Pâtisserie</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-page="cart">
+    <div data-site-header></div>
+
+    <main id="main-content">
+      <section class="page-hero page-hero--compact">
+        <div class="container page-hero__inner">
+          <p class="eyebrow" data-vi="Giỏ hàng V1" data-ko="V1 장바구니">Giỏ hàng V1</p>
+          <h1 data-vi="Hoàn tất thông tin đặt bánh" data-ko="주문 정보를 작성해 주세요">Hoàn tất thông tin đặt bánh</h1>
+          <p data-vi="Kiểm tra món đã chọn, điền thông tin và chọn nhận tại cửa hàng hoặc giao hàng. Prototype chưa gửi đơn thật và chưa có thanh toán online." data-ko="선택한 상품을 확인하고 정보를 입력한 뒤 픽업 또는 배송을 선택하세요. 이 프로토타입은 실제 주문이나 온라인 결제를 처리하지 않습니다.">Kiểm tra món đã chọn, điền thông tin và chọn nhận tại cửa hàng hoặc giao hàng. Prototype chưa gửi đơn thật và chưa có thanh toán online.</p>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container cart-layout">
+          <div class="cart-main">
+            <div class="cart-section-heading">
+              <div>
+                <p class="eyebrow" data-vi="Các món đã chọn" data-ko="선택한 상품">Các món đã chọn</p>
+                <h2 data-cart-items-label data-vi="Giỏ hàng của bạn" data-ko="장바구니">Giỏ hàng của bạn</h2>
+              </div>
+              <a class="text-link" href="menu.html" data-vi="Thêm món khác" data-ko="상품 더 담기">Thêm món khác</a>
+            </div>
+            <div class="cart-list" data-cart-list aria-live="polite"></div>
+
+            <form class="order-form" id="prototype-order-form" data-order-form>
+              <div class="form-section">
+                <p class="form-section__number">01</p>
+                <div class="form-section__content">
+                  <h2 data-vi="Thông tin khách hàng" data-ko="고객 정보">Thông tin khách hàng</h2>
+                  <div class="field-grid">
+                    <label class="field">
+                      <span data-vi="Họ và tên" data-ko="이름">Họ và tên</span>
+                      <input type="text" name="customer_name" autocomplete="name" required data-placeholder-vi="Tên người nhận" data-placeholder-ko="수령인 이름" placeholder="Tên người nhận" />
+                    </label>
+                    <label class="field">
+                      <span data-vi="Số điện thoại" data-ko="전화번호">Số điện thoại</span>
+                      <input type="tel" name="customer_phone" autocomplete="tel" required data-placeholder-vi="Số điện thoại liên hệ" data-placeholder-ko="연락 가능한 전화번호" placeholder="Số điện thoại liên hệ" />
+                    </label>
+                    <label class="field field--wide">
+                      <span data-vi="Email (không bắt buộc)" data-ko="이메일 (선택)">Email (không bắt buộc)</span>
+                      <input type="email" name="customer_email" autocomplete="email" data-placeholder-vi="email@example.com" data-placeholder-ko="email@example.com" placeholder="email@example.com" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <p class="form-section__number">02</p>
+                <div class="form-section__content">
+                  <h2 data-vi="Cách nhận bánh" data-ko="수령 방법">Cách nhận bánh</h2>
+                  <div class="choice-grid">
+                    <label class="choice-card">
+                      <input type="radio" name="fulfillment" value="pickup" checked />
+                      <span>
+                        <strong data-vi="Nhận tại cửa hàng" data-ko="매장 픽업">Nhận tại cửa hàng</strong>
+                        <small data-vi="128 Nguyễn Văn Trỗi, Phú Nhuận" data-ko="푸뉴언군 응우옌반쪼이 128">128 Nguyễn Văn Trỗi, Phú Nhuận</small>
+                      </span>
+                    </label>
+                    <label class="choice-card">
+                      <input type="radio" name="fulfillment" value="delivery" />
+                      <span>
+                        <strong data-vi="Giao hàng" data-ko="배송">Giao hàng</strong>
+                        <small data-vi="Phí giao hàng sẽ được Hlime xác nhận" data-ko="배송비는 흘라임 확인 후 안내됩니다">Phí giao hàng sẽ được Hlime xác nhận</small>
+                      </span>
+                    </label>
+                  </div>
+                  <div class="field-grid delivery-fields" data-delivery-fields hidden>
+                    <label class="field field--wide">
+                      <span data-vi="Địa chỉ giao hàng" data-ko="배송 주소">Địa chỉ giao hàng</span>
+                      <input type="text" name="delivery_address" autocomplete="street-address" data-placeholder-vi="Số nhà, tên đường, phường/xã, quận/huyện" data-placeholder-ko="상세 배송 주소" placeholder="Số nhà, tên đường, phường/xã, quận/huyện" />
+                    </label>
+                    <label class="field field--wide">
+                      <span data-vi="Hướng dẫn giao hàng (không bắt buộc)" data-ko="배송 메모 (선택)">Hướng dẫn giao hàng (không bắt buộc)</span>
+                      <input type="text" name="delivery_note" data-placeholder-vi="Ví dụ: gọi trước khi giao" data-placeholder-ko="예: 배송 전 연락" placeholder="Ví dụ: gọi trước khi giao" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <p class="form-section__number">03</p>
+                <div class="form-section__content">
+                  <h2 data-vi="Thời gian và ghi chú" data-ko="시간 및 요청사항">Thời gian và ghi chú</h2>
+                  <div class="field-grid">
+                    <label class="field">
+                      <span data-vi="Ngày cần bánh" data-ko="수령 희망일">Ngày cần bánh</span>
+                      <input type="date" name="order_date" required />
+                    </label>
+                    <label class="field">
+                      <span data-vi="Khung giờ dự kiến" data-ko="희망 시간대">Khung giờ dự kiến</span>
+                      <select name="order_time" required>
+                        <option value="" data-vi="Chọn khung giờ" data-ko="시간대 선택">Chọn khung giờ</option>
+                        <option>09:00 – 12:00</option>
+                        <option>12:00 – 16:00</option>
+                        <option>16:00 – 20:00</option>
+                      </select>
+                    </label>
+                    <label class="field field--wide">
+                      <span data-vi="Ghi chú đơn hàng (không bắt buộc)" data-ko="주문 메모 (선택)">Ghi chú đơn hàng (không bắt buộc)</span>
+                      <textarea name="order_note" rows="4" data-placeholder-vi="Thông tin Hlime cần biết về đơn hàng" data-placeholder-ko="주문과 관련해 흘라임이 알아야 할 내용을 적어주세요" placeholder="Thông tin Hlime cần biết về đơn hàng"></textarea>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <aside class="cart-summary">
+            <p class="eyebrow" data-vi="Tóm tắt" data-ko="주문 요약">Tóm tắt</p>
+            <h2 data-vi="Đơn hàng" data-ko="주문 내역">Đơn hàng</h2>
+            <div class="summary-row">
+              <span data-vi="Tạm tính" data-ko="상품 금액">Tạm tính</span>
+              <strong data-cart-subtotal>0 ₫</strong>
+            </div>
+            <div class="summary-row">
+              <span data-vi="Phí giao hàng" data-ko="배송비">Phí giao hàng</span>
+              <span data-vi="Xác nhận sau" data-ko="추후 확인">Xác nhận sau</span>
+            </div>
+            <div class="summary-total">
+              <span data-vi="Tổng tạm tính" data-ko="예상 합계">Tổng tạm tính</span>
+              <strong data-cart-subtotal>0 ₫</strong>
+            </div>
+            <div class="notice-box notice-box--small">
+              <strong data-vi="Không thanh toán ở bước này" data-ko="현재 결제는 진행되지 않습니다">Không thanh toán ở bước này</strong>
+              <span data-vi="Sau khi gửi, đơn ở trạng thái PENDING. Hlime sẽ liên hệ xác nhận trước khi chuyển sang CONFIRMED." data-ko="제출 후 주문은 PENDING 상태가 됩니다. 흘라임이 연락해 확인한 뒤 CONFIRMED로 변경됩니다.">Sau khi gửi, đơn ở trạng thái PENDING. Hlime sẽ liên hệ xác nhận trước khi chuyển sang CONFIRMED.</span>
+            </div>
+            <button class="button button--primary button--full" type="submit" form="prototype-order-form" data-submit-demo-order data-vi="Gửi thử đơn hàng" data-ko="데모 주문 제출">Gửi thử đơn hàng</button>
+            <p class="form-helper" data-vi="Prototype không gửi dữ liệu hay tạo đơn thật." data-ko="프로토타입은 실제 데이터를 전송하거나 주문을 생성하지 않습니다.">Prototype không gửi dữ liệu hay tạo đơn thật.</p>
+            <div class="order-status" data-order-status aria-live="polite"></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <div data-site-footer></div>
+    <script src="script.js"></script>
+  </body>
+</html>
