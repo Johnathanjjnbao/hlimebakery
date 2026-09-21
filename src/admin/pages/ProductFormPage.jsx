@@ -15,10 +15,22 @@ const emptyProduct = {
   featured: false, best_seller: false, display_order: 0, ko_translation_status: 'missing',
 };
 
-export default function ProductFormPage() {
+const MAX_BIGINT_ID = 9223372036854775807n;
+
+function isValidProductId(value) {
+  if (!/^[1-9]\d*$/.test(value || '')) return false;
+  try {
+    return BigInt(value) <= MAX_BIGINT_ID;
+  } catch {
+    return false;
+  }
+}
+
+export default function ProductFormPage({ mode }) {
   const { t } = useAdminLanguage();
   const { id } = useParams();
-  const isNew = id === 'new';
+  const isCreateMode = mode === 'create';
+  const hasValidEditId = mode === 'edit' && isValidProductId(id);
   const navigate = useNavigate();
   const [original, setOriginal] = useState(null);
   const [draft, setDraft] = useState(emptyProduct);
@@ -32,6 +44,12 @@ export default function ProductFormPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError('');
+    if (!isCreateMode && !hasValidEditId) {
+      setError(t('products.invalidId'));
+      setLoading(false);
+      return;
+    }
     const client = requireSupabase();
     const categoryResult = await client.from('categories').select('id,name_vi,active').order('display_order').order('id');
     if (categoryResult.error) {
@@ -40,8 +58,11 @@ export default function ProductFormPage() {
       return;
     }
     setCategories(categoryResult.data);
-    if (isNew) {
-      setDraft((current) => ({ ...current, category_id: categoryResult.data[0]?.id || '' }));
+    if (isCreateMode) {
+      setOriginal(null);
+      setDraft({ ...emptyProduct, category_id: categoryResult.data[0]?.id || '' });
+      setSizes([]);
+      setFlavors([]);
       setLoading(false);
       return;
     }
@@ -60,7 +81,7 @@ export default function ProductFormPage() {
       setError('');
     }
     setLoading(false);
-  }, [id, isNew]);
+  }, [hasValidEditId, id, isCreateMode, t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -69,6 +90,7 @@ export default function ProductFormPage() {
   const save = async (event) => {
     event.preventDefault();
     setStatus(null);
+    if (!isCreateMode && !hasValidEditId) return setStatus({ type: 'error', message: t('products.invalidId') });
     if (!draft.name_vi.trim()) return setStatus({ type: 'error', message: t('products.validationName') });
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug)) return setStatus({ type: 'error', message: t('products.validationSlug') });
     if (!draft.category_id) return setStatus({ type: 'error', message: t('products.validationCategory') });
@@ -96,11 +118,11 @@ export default function ProductFormPage() {
         ['name_vi', 'short_description_vi', 'description_vi'],
         ['name_ko', 'short_description_ko', 'description_ko']),
     };
-    const result = isNew
+    const result = isCreateMode
       ? await requireSupabase().from('products').insert(payload).select('*').single()
       : await requireSupabase().from('products').update(payload).eq('id', id).select('*').single();
     if (result.error) setStatus({ type: 'error', message: result.error.message });
-    else if (isNew) navigate(`/admin/products/${result.data.id}`, { replace: true });
+    else if (isCreateMode) navigate(`/admin/products/${result.data.id}`, { replace: true });
     else {
       setOriginal(result.data);
       setDraft(result.data);
@@ -110,6 +132,7 @@ export default function ProductFormPage() {
   };
 
   const saveImagePath = async (path) => {
+    if (!hasValidEditId) throw new Error(t('products.invalidId'));
     const { data, error: updateError } = await requireSupabase().from('products').update({ image_path: path }).eq('id', id).select('*').single();
     if (updateError) throw updateError;
     setOriginal(data);
@@ -117,7 +140,7 @@ export default function ProductFormPage() {
   };
 
   return (
-    <AdminPage title={isNew ? t('products.add') : t('products.edit', { id })} description={t('products.schemaDescription')} action={<Link className="admin-button admin-button--secondary" to="/admin/products">{t('products.backToList')}</Link>}>
+    <AdminPage title={isCreateMode ? t('products.add') : t('products.edit', { id })} description={t('products.schemaDescription')} action={<Link className="admin-button admin-button--secondary" to="/admin/products">{t('products.backToList')}</Link>}>
       {loading ? <AdminLoading /> : error ? <AdminError error={error} retry={load} /> : (
         <>
           <form className="admin-card admin-form" onSubmit={save}>
@@ -142,12 +165,12 @@ export default function ProductFormPage() {
             <div className="admin-check-grid">
               {[['active', t('common.active')], ['available', t('common.available')], ['featured', t('common.featured')], ['best_seller', t('common.bestSeller')]].map(([field, label]) => <label className="admin-check" key={field}><input type="checkbox" checked={Boolean(draft[field])} onChange={(event) => change(field, event.target.checked)} /><span>{label}</span></label>)}
             </div>
-            <ImageUploadField label={t('products.image')} path={draft.image_path} folder={`products/${id}`} disabled={isNew} onUploaded={saveImagePath} />
+            <ImageUploadField label={t('products.image')} path={draft.image_path} folder={`products/${id}`} disabled={isCreateMode} onUploaded={saveImagePath} />
             <SaveNotice status={status} />
             <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? t('common.saving') : t('products.save')}</button>
           </form>
-          {!isNew && <ProductOptionsEditor productId={Number(id)} kind="size" initialOptions={sizes} onRefresh={load} />}
-          {!isNew && <ProductOptionsEditor productId={Number(id)} kind="flavor" initialOptions={flavors} onRefresh={load} />}
+          {!isCreateMode && <ProductOptionsEditor productId={id} kind="size" initialOptions={sizes} onRefresh={load} />}
+          {!isCreateMode && <ProductOptionsEditor productId={id} kind="flavor" initialOptions={flavors} onRefresh={load} />}
         </>
       )}
     </AdminPage>
