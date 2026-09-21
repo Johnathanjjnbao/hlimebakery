@@ -16,6 +16,16 @@ import { pathWithoutLocale } from './utils/i18n';
 
 const AdminApp = lazy(() => import('./admin/AdminApp'));
 
+function AdminLoadingFallback() {
+  let locale = 'vi';
+  try {
+    locale = window.localStorage.getItem('hlime-admin-locale') === 'ko' ? 'ko' : 'vi';
+  } catch {
+    // Keep the default Vietnamese label when storage is unavailable.
+  }
+  return <main className="admin-auth-loading">{locale === 'ko' ? '관리자 화면을 불러오는 중…' : 'Đang tải Admin…'}</main>;
+}
+
 function pageMeta(pathname) {
   const path = pathWithoutLocale(pathname);
   if (path === '/') return { page: 'home', title: 'Hlime Bakery & Pâtisserie' };
@@ -57,7 +67,7 @@ export default function App() {
     <AppProvider>
       <DataProvider>
         <Routes>
-          <Route path="/admin/*" element={<Suspense fallback={<main className="admin-auth-loading">Đang tải Admin…</main>}><AdminApp /></Suspense>} />
+          <Route path="/admin/*" element={<Suspense fallback={<AdminLoadingFallback />}><AdminApp /></Suspense>} />
           <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/menu" element={<MenuPage />} />

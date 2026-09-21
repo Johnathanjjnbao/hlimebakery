@@ -1,13 +1,17 @@
-export function AdminLoading({ label = 'Đang tải dữ liệu…' }) {
-  return <div className="admin-state" role="status"><span className="admin-spinner" aria-hidden="true" />{label}</div>;
+import { useAdminLanguage } from '../i18n/AdminLanguageContext';
+
+export function AdminLoading({ label }) {
+  const { t } = useAdminLanguage();
+  return <div className="admin-state" role="status"><span className="admin-spinner" aria-hidden="true" />{label || t('common.loading')}</div>;
 }
 
 export function AdminError({ error, retry }) {
+  const { t } = useAdminLanguage();
   return (
     <div className="admin-state admin-state--error" role="alert">
-      <strong>Không thể hoàn tất yêu cầu</strong>
-      <span>{typeof error === 'string' ? error : error?.message || 'Đã xảy ra lỗi.'}</span>
-      {retry && <button className="admin-button admin-button--secondary" type="button" onClick={retry}>Thử lại</button>}
+      <strong>{t('common.errorTitle')}</strong>
+      <span>{typeof error === 'string' ? error : error?.message || t('common.errorFallback')}</span>
+      {retry && <button className="admin-button admin-button--secondary" type="button" onClick={retry}>{t('common.retry')}</button>}
     </div>
   );
 }

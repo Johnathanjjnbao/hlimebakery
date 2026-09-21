@@ -4,8 +4,10 @@ import { money } from '../../utils/i18n';
 import { requireSupabase } from '../../lib/supabase';
 import AdminPage from '../components/AdminPage';
 import { AdminEmpty, AdminError, AdminLoading } from '../components/AdminState';
+import { useAdminLanguage } from '../i18n/AdminLanguageContext';
 
 export default function DashboardPage() {
+  const { locale, t } = useAdminLanguage();
   const [state, setState] = useState({ loading: true, error: '', counts: {}, orders: [] });
 
   const load = useCallback(async () => {
@@ -34,19 +36,19 @@ export default function DashboardPage() {
   useEffect(() => { load(); }, [load]);
 
   return (
-    <AdminPage title="Dashboard" description="Tổng quan vận hành Hlime V1.">
+    <AdminPage title={t('dashboard.title')} description={t('dashboard.description')}>
       {state.loading ? <AdminLoading /> : state.error ? <AdminError error={state.error} retry={load} /> : (
         <>
           <div className="admin-stat-grid">
-            {[['Products', state.counts.products], ['Categories', state.counts.categories], ['Orders', state.counts.orders], ['Pending Orders', state.counts.pending]].map(([label, value]) => (
+            {[[t('dashboard.products'), state.counts.products], [t('dashboard.categories'), state.counts.categories], [t('dashboard.orders'), state.counts.orders], [t('dashboard.pendingOrders'), state.counts.pending]].map(([label, value]) => (
               <article className="admin-stat" key={label}><span>{label}</span><strong>{value}</strong></article>
             ))}
           </div>
           <section className="admin-card">
-            <div className="admin-card__header"><div><h2>Pending Orders mới nhất</h2><p>Ưu tiên đơn cần xác nhận.</p></div><Link className="admin-button admin-button--secondary" to="/admin/orders">Xem tất cả</Link></div>
-            {!state.orders.length ? <AdminEmpty title="Chưa có Pending Order" text="Đơn mới sẽ xuất hiện tại đây." /> : (
-              <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Khách hàng</th><th>Ngày cần</th><th>Hình thức</th><th>Tạm tính</th><th /></tr></thead><tbody>
-                {state.orders.map((order) => <tr key={order.id}><td>{order.customer_name}</td><td>{order.requested_fulfillment_date || '—'}</td><td>{order.fulfillment_type}</td><td>{money(order.subtotal_amount)}</td><td><Link to={`/admin/orders/${order.id}`}>Chi tiết</Link></td></tr>)}
+            <div className="admin-card__header"><div><h2>{t('dashboard.latestPending')}</h2><p>{t('dashboard.pendingDescription')}</p></div><Link className="admin-button admin-button--secondary" to="/admin/orders">{t('dashboard.viewAll')}</Link></div>
+            {!state.orders.length ? <AdminEmpty title={t('dashboard.noPending')} text={t('dashboard.noPendingText')} /> : (
+              <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>{t('common.customer')}</th><th>{t('dashboard.requiredDate')}</th><th>{t('dashboard.fulfillment')}</th><th>{t('common.subtotal')}</th><th /></tr></thead><tbody>
+                {state.orders.map((order) => <tr key={order.id}><td>{order.customer_name}</td><td>{order.requested_fulfillment_date || '—'}</td><td>{t(order.fulfillment_type === 'DELIVERY' ? 'orders.delivery' : 'orders.pickup')}</td><td>{money(order.subtotal_amount, locale)}</td><td><Link to={`/admin/orders/${order.id}`}>{t('common.details')}</Link></td></tr>)}
               </tbody></table></div>
             )}
           </section>

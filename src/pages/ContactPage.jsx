@@ -1,4 +1,5 @@
 import DemoImage from '../components/DemoImage';
+import LocationMap from '../components/LocationMap';
 import { useApp } from '../context/AppContext';
 import { useData } from '../context/DataContext';
 import { contactContent } from '../data/siteContent';
@@ -55,7 +56,6 @@ export default function ContactPage() {
               <p className="eyebrow">{locale === 'ko' ? '주소' : 'Địa chỉ'}</p>
               <h2>{textFor(atmosphere?.title, locale) || 'Hlime Bakery & Pâtisserie'}</h2>
               <p>{textFor(siteContent.address, locale)}</p>
-              {siteContent.mapUrl && <a className="text-link" href={siteContent.mapUrl} target="_blank" rel="noreferrer">{locale === 'ko' ? '지도 열기 ↗' : 'Mở bản đồ ↗'}</a>}
             </article>
             <div className="contact-card-grid">
               <article className="contact-card contact-card--small">
@@ -67,9 +67,7 @@ export default function ContactPage() {
                 <p>{textFor(siteContent.hours, locale)}</p>
               </article>
             </div>
-            <div className="map-placeholder" role="img" aria-label={locale === 'ko' ? 'Hlime 매장 위치' : 'Vị trí cửa hàng Hlime'}>
-              <span aria-hidden="true">H</span><p>{locale === 'ko' ? 'Hlime 매장 위치' : 'Vị trí cửa hàng Hlime'}</p>
-            </div>
+            <LocationMap className="map-placeholder" address={siteContent.address} mapUrl={siteContent.mapUrl} locale={locale} />
           </div>
 
           {support && <section className="form-card" aria-labelledby="contact-support-title">

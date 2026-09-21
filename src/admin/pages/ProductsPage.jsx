@@ -5,8 +5,10 @@ import { requireSupabase } from '../../lib/supabase';
 import { money } from '../../utils/i18n';
 import AdminPage from '../components/AdminPage';
 import { AdminEmpty, AdminError, AdminLoading } from '../components/AdminState';
+import { useAdminLanguage } from '../i18n/AdminLanguageContext';
 
 export default function ProductsPage() {
+  const { locale, t } = useAdminLanguage();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,26 +45,26 @@ export default function ProductsPage() {
 
   return (
     <AdminPage
-      title="Products"
-      description="Quản lý sản phẩm, trạng thái bán và options VI/KO."
-      action={<Link className="admin-button admin-button--primary" to="/admin/products/new">Thêm Product</Link>}
+      title={t('products.title')}
+      description={t('products.description')}
+      action={<Link className="admin-button admin-button--primary" to="/admin/products/new">{t('products.add')}</Link>}
     >
       <div className="admin-toolbar">
-        <label className="admin-field"><span>Tìm theo tên VI</span><input value={search} onChange={(event) => setSearch(event.target.value)} type="search" /></label>
-        <label className="admin-field"><span>Trạng thái</span><select value={active} onChange={(event) => setActive(event.target.value)}><option value="all">Tất cả</option><option value="true">Active</option><option value="false">Inactive</option></select></label>
-        <label className="admin-field"><span>Category</span><select value={category} onChange={(event) => setCategory(event.target.value)}><option value="all">Tất cả</option>{categories.map((item) => <option value={item.id} key={item.id}>{item.name_vi}</option>)}</select></label>
+        <label className="admin-field"><span>{t('products.searchVi')}</span><input value={search} onChange={(event) => setSearch(event.target.value)} type="search" /></label>
+        <label className="admin-field"><span>{t('common.status')}</span><select value={active} onChange={(event) => setActive(event.target.value)}><option value="all">{t('common.all')}</option><option value="true">{t('common.active')}</option><option value="false">{t('common.inactive')}</option></select></label>
+        <label className="admin-field"><span>{t('common.category')}</span><select value={category} onChange={(event) => setCategory(event.target.value)}><option value="all">{t('common.all')}</option>{categories.map((item) => <option value={item.id} key={item.id}>{item.name_vi}</option>)}</select></label>
       </div>
-      {loading ? <AdminLoading /> : error ? <AdminError error={error} retry={load} /> : !visible.length ? <AdminEmpty title="Không có Product phù hợp" text="Thử đổi bộ lọc hoặc tạo Product mới." /> : (
-        <div className="admin-table-wrap"><table className="admin-table admin-table--products"><thead><tr><th>Ảnh</th><th>Tên VI</th><th>Category</th><th>Giá</th><th>Flags</th><th>Thứ tự</th><th /></tr></thead><tbody>
+      {loading ? <AdminLoading /> : error ? <AdminError error={error} retry={load} /> : !visible.length ? <AdminEmpty title={t('products.noMatch')} text={t('products.noMatchText')} /> : (
+        <div className="admin-table-wrap"><table className="admin-table admin-table--products"><thead><tr><th>{t('common.image')}</th><th>{t('products.nameVi')}</th><th>{t('common.category')}</th><th>{t('common.price')}</th><th>{t('common.flags')}</th><th>{t('common.displayOrder')}</th><th /></tr></thead><tbody>
           {visible.map((product) => (
             <tr key={product.id}>
               <td>{product.image_path ? <img className="admin-thumb" src={resolveImageUrl(product.image_path)} alt="" /> : <span className="admin-thumb admin-thumb--empty">—</span>}</td>
               <td><strong>{product.name_vi}</strong><small>{product.slug}</small></td>
               <td>{product.categories?.name_vi || '—'}</td>
-              <td>{money(product.price_amount)}</td>
-              <td><div className="admin-tag-list"><span className={product.active ? 'is-on' : ''}>Active</span><span className={product.available ? 'is-on' : ''}>Available</span><span className={product.featured ? 'is-on' : ''}>Featured</span><span className={product.best_seller ? 'is-on' : ''}>Best seller</span></div></td>
+              <td>{money(product.price_amount, locale)}</td>
+              <td><div className="admin-tag-list"><span className={product.active ? 'is-on' : ''}>{t('common.active')}</span><span className={product.available ? 'is-on' : ''}>{t('common.available')}</span><span className={product.featured ? 'is-on' : ''}>{t('common.featured')}</span><span className={product.best_seller ? 'is-on' : ''}>{t('common.bestSeller')}</span></div></td>
               <td>{product.display_order}</td>
-              <td><Link to={`/admin/products/${product.id}`}>Edit</Link></td>
+              <td><Link to={`/admin/products/${product.id}`}>{t('common.edit')}</Link></td>
             </tr>
           ))}
         </tbody></table></div>

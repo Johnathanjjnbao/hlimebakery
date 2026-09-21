@@ -13,37 +13,41 @@ import PageContentPage from './pages/PageContentPage';
 import ProductFormPage from './pages/ProductFormPage';
 import ProductsPage from './pages/ProductsPage';
 import SiteSettingsPage from './pages/SiteSettingsPage';
+import { AdminLanguageProvider, useAdminLanguage } from './i18n/AdminLanguageContext';
 
 function RequireAdmin() {
   const { user, loading } = useAdminAuth();
+  const { t } = useAdminLanguage();
   const location = useLocation();
-  if (loading) return <main className="admin-auth-loading"><AdminLoading label="Đang khôi phục phiên Admin…" /></main>;
+  if (loading) return <main className="admin-auth-loading"><AdminLoading label={t('auth.restoring')} /></main>;
   if (!user) return <Navigate to="/admin/login" state={{ from: location.pathname }} replace />;
   return <Outlet />;
 }
 
 export default function AdminApp() {
   return (
-    <AdminAuthProvider>
-      <Routes>
-        <Route path="login" element={<AdminLoginPage />} />
-        <Route element={<RequireAdmin />}>
-          <Route element={<AdminLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="products" element={<ProductsPage />} />
-            <Route path="products/new" element={<ProductFormPage />} />
-            <Route path="products/:id" element={<ProductFormPage />} />
-            <Route path="categories" element={<CategoriesPage />} />
-            <Route path="orders" element={<OrdersPage />} />
-            <Route path="orders/:id" element={<OrderDetailPage />} />
-            <Route path="homepage" element={<HomepagePage />} />
-            <Route path="page-content" element={<PageContentPage />} />
-            <Route path="site-settings" element={<SiteSettingsPage />} />
-            <Route path="order-settings" element={<OrderSettingsPage />} />
-            <Route path="*" element={<Navigate to="/admin" replace />} />
+    <AdminLanguageProvider>
+      <AdminAuthProvider>
+        <Routes>
+          <Route path="login" element={<AdminLoginPage />} />
+          <Route element={<RequireAdmin />}>
+            <Route element={<AdminLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="products" element={<ProductsPage />} />
+              <Route path="products/new" element={<ProductFormPage />} />
+              <Route path="products/:id" element={<ProductFormPage />} />
+              <Route path="categories" element={<CategoriesPage />} />
+              <Route path="orders" element={<OrdersPage />} />
+              <Route path="orders/:id" element={<OrderDetailPage />} />
+              <Route path="homepage" element={<HomepagePage />} />
+              <Route path="page-content" element={<PageContentPage />} />
+              <Route path="site-settings" element={<SiteSettingsPage />} />
+              <Route path="order-settings" element={<OrderSettingsPage />} />
+              <Route path="*" element={<Navigate to="/admin" replace />} />
+            </Route>
           </Route>
-        </Route>
-      </Routes>
-    </AdminAuthProvider>
+        </Routes>
+      </AdminAuthProvider>
+    </AdminLanguageProvider>
   );
 }

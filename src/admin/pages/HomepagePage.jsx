@@ -5,11 +5,13 @@ import AdminPage from '../components/AdminPage';
 import { AdminEmpty, AdminError, AdminLoading, SaveNotice } from '../components/AdminState';
 import ImageUploadField from '../components/ImageUploadField';
 import TranslationPanel from '../components/TranslationPanel';
+import { useAdminLanguage } from '../i18n/AdminLanguageContext';
 
 const VI_FIELDS = ['eyebrow_vi', 'title_vi', 'subtitle_vi', 'body_vi'];
 const KO_FIELDS = ['eyebrow_ko', 'title_ko', 'subtitle_ko', 'body_ko'];
 
 function HomepageSectionForm({ section, onSaved }) {
+  const { t } = useAdminLanguage();
   const [draft, setDraft] = useState(section);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
@@ -30,7 +32,7 @@ function HomepageSectionForm({ section, onSaved }) {
     if (error) setStatus({ type: 'error', message: error.message });
     else {
       setDraft(data);
-      setStatus({ type: 'success', message: 'Section đã được lưu. Public site sẽ thấy thay đổi sau khi refresh.' });
+      setStatus({ type: 'success', message: t('homepage.saved') });
       onSaved();
     }
     setSaving(false);
@@ -45,22 +47,23 @@ function HomepageSectionForm({ section, onSaved }) {
 
   return (
     <form className="admin-card admin-form" onSubmit={save}>
-      <div className="admin-card__header"><div><h2>{draft.section_key}</h2><p>Section schema hiện có · #{draft.display_order}</p></div><label className="admin-check"><input type="checkbox" checked={draft.active} onChange={(event) => change('active', event.target.checked)} /><span>Visible</span></label></div>
+      <div className="admin-card__header"><div><h2>{draft.section_key}</h2><p>{t('homepage.sectionDescription', { order: draft.display_order })}</p></div><label className="admin-check"><input type="checkbox" checked={draft.active} onChange={(event) => change('active', event.target.checked)} /><span>{t('common.visible')}</span></label></div>
       <div className="admin-form-grid">
-        {VI_FIELDS.map((field) => <label className={`admin-field${field === 'body_vi' ? ' admin-field--wide' : ''}`} key={field}><span>{field}</span>{field === 'body_vi' || field === 'subtitle_vi' ? <textarea rows={field === 'body_vi' ? 4 : 2} value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} /> : <input value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} />}</label>)}
-        <label className="admin-field"><span>display_order</span><input type="number" min="0" value={draft.display_order} onChange={(event) => change('display_order', event.target.value)} /></label>
+        {VI_FIELDS.map((field) => <label className={`admin-field${field === 'body_vi' ? ' admin-field--wide' : ''}`} key={field}><span>{t(`content.${field.replace('_vi', '').replace('eyebrow', 'eyebrow').replace('title', 'title').replace('subtitle', 'subtitle').replace('body', 'body')}Vi`)}</span>{field === 'body_vi' || field === 'subtitle_vi' ? <textarea rows={field === 'body_vi' ? 4 : 2} value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} /> : <input value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} />}</label>)}
+        <label className="admin-field"><span>{t('common.displayOrder')}</span><input type="number" min="0" value={draft.display_order} onChange={(event) => change('display_order', event.target.value)} /></label>
       </div>
       <TranslationPanel status={draft.ko_translation_status}><div className="admin-form-grid">
-        {KO_FIELDS.map((field) => <label className={`admin-field${field === 'body_ko' ? ' admin-field--wide' : ''}`} key={field}><span>{field}</span>{field === 'body_ko' || field === 'subtitle_ko' ? <textarea rows={field === 'body_ko' ? 4 : 2} value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} /> : <input value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} />}</label>)}
+        {KO_FIELDS.map((field) => <label className={`admin-field${field === 'body_ko' ? ' admin-field--wide' : ''}`} key={field}><span>{t(`content.${field.replace('_ko', '')}Ko`)}</span>{field === 'body_ko' || field === 'subtitle_ko' ? <textarea rows={field === 'body_ko' ? 4 : 2} value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} /> : <input value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} />}</label>)}
       </div></TranslationPanel>
-      <ImageUploadField label="Ảnh section" path={draft.image_path} folder="site/home" onUploaded={saveImagePath} />
+      <ImageUploadField label={t('homepage.image')} path={draft.image_path} folder="site/home" onUploaded={saveImagePath} />
       <SaveNotice status={status} />
-      <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? 'Đang lưu…' : 'Lưu section'}</button>
+      <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? t('common.saving') : t('homepage.save')}</button>
     </form>
   );
 }
 
 export default function HomepagePage() {
+  const { t } = useAdminLanguage();
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -71,7 +74,7 @@ export default function HomepagePage() {
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  return <AdminPage title="Homepage Settings" description="CMS tối thiểu theo đúng các field schema; không phải page builder.">
-    {loading ? <AdminLoading /> : error ? <AdminError error={error} retry={load} /> : !sections.length ? <AdminEmpty title="Chưa có Homepage section" /> : <div className="admin-stack">{sections.map((section) => <HomepageSectionForm key={section.id} section={section} onSaved={load} />)}</div>}
+  return <AdminPage title={t('homepage.title')} description={t('homepage.description')}>
+    {loading ? <AdminLoading /> : error ? <AdminError error={error} retry={load} /> : !sections.length ? <AdminEmpty title={t('homepage.noSections')} /> : <div className="admin-stack">{sections.map((section) => <HomepageSectionForm key={section.id} section={section} onSaved={load} />)}</div>}
   </AdminPage>;
 }

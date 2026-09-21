@@ -4,12 +4,14 @@ import { translationMetaForSave } from '../../lib/translation';
 import AdminPage from '../components/AdminPage';
 import { AdminError, AdminLoading, SaveNotice } from '../components/AdminState';
 import TranslationPanel from '../components/TranslationPanel';
+import { useAdminLanguage } from '../i18n/AdminLanguageContext';
 
 const KEYS = ['pickup_help', 'delivery_help', 'submit_help', 'pending_help', 'confirmed_help'];
-const labels = { pickup_help: 'Pickup help', delivery_help: 'Delivery help', submit_help: 'Submit help', pending_help: 'Pending help', confirmed_help: 'Confirmed help' };
+const labelKeys = { pickup_help: 'orderSettings.pickupHelp', delivery_help: 'orderSettings.deliveryHelp', submit_help: 'orderSettings.submitHelp', pending_help: 'orderSettings.pendingHelp', confirmed_help: 'orderSettings.confirmedHelp' };
 const emptySettings = Object.assign({ id: 1, ko_translation_status: 'missing' }, ...KEYS.flatMap((key) => [{ [`${key}_vi`]: '' }, { [`${key}_ko`]: '' }]));
 
 export default function OrderSettingsPage() {
+  const { t } = useAdminLanguage();
   const [original, setOriginal] = useState(null);
   const [draft, setDraft] = useState(emptySettings);
   const [loading, setLoading] = useState(true);
@@ -37,16 +39,16 @@ export default function OrderSettingsPage() {
     };
     const { data, error: saveError } = await requireSupabase().from('order_settings').upsert(payload).select('*').single();
     if (saveError) setStatus({ type: 'error', message: saveError.message });
-    else { setOriginal(data); setDraft(data); setStatus({ type: 'success', message: 'Order Settings đã được lưu.' }); }
+    else { setOriginal(data); setDraft(data); setStatus({ type: 'success', message: t('orderSettings.saved') }); }
     setSaving(false);
   };
 
-  return <AdminPage title="Order Settings" description="Chỉ expose help text hiện có trong schema; không có fee engine hoặc payment logic.">
+  return <AdminPage title={t('orderSettings.title')} description={t('orderSettings.description')}>
     {loading ? <AdminLoading /> : error ? <AdminError error={error} retry={load} /> : <form className="admin-card admin-form" onSubmit={save}>
-      <div className="admin-form-grid">{KEYS.map((key) => <label className="admin-field admin-field--wide" key={key}><span>{labels[key]} VI</span><textarea rows="3" value={draft[`${key}_vi`] || ''} onChange={(event) => change(`${key}_vi`, event.target.value)} /></label>)}</div>
-      <TranslationPanel status={draft.ko_translation_status}><div className="admin-form-grid">{KEYS.map((key) => <label className="admin-field admin-field--wide" key={key}><span>{labels[key]} KO</span><textarea rows="3" value={draft[`${key}_ko`] || ''} onChange={(event) => change(`${key}_ko`, event.target.value)} /></label>)}</div></TranslationPanel>
+      <div className="admin-form-grid">{KEYS.map((key) => <label className="admin-field admin-field--wide" key={key}><span>{t(labelKeys[key])} · {t('languageName.vi')}</span><textarea rows="3" value={draft[`${key}_vi`] || ''} onChange={(event) => change(`${key}_vi`, event.target.value)} /></label>)}</div>
+      <TranslationPanel status={draft.ko_translation_status}><div className="admin-form-grid">{KEYS.map((key) => <label className="admin-field admin-field--wide" key={key}><span>{t(labelKeys[key])} · {t('languageName.ko')}</span><textarea rows="3" value={draft[`${key}_ko`] || ''} onChange={(event) => change(`${key}_ko`, event.target.value)} /></label>)}</div></TranslationPanel>
       <SaveNotice status={status} />
-      <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? 'Đang lưu…' : 'Lưu Order Settings'}</button>
+      <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? t('common.saving') : t('orderSettings.save')}</button>
     </form>}
   </AdminPage>;
 }

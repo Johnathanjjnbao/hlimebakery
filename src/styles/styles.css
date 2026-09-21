@@ -1717,6 +1717,66 @@ body[data-page='about'] .value-card:nth-child(2) {
   font-weight: 600;
 }
 
+.location-map {
+  position: relative;
+  overflow: hidden;
+  background: #382b28;
+}
+
+.location-map iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.contact-band__map.location-map::before,
+.contact-band__map.location-map::after {
+  content: none;
+}
+
+.map-placeholder.location-map {
+  display: block;
+  padding: 0;
+  background: #382b28;
+}
+
+.location-map__link {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  background: rgba(56, 43, 40, 0.9);
+  box-shadow: 0 6px 20px rgba(35, 24, 21, 0.2);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.location-map__link:hover {
+  background: var(--burgundy);
+  color: #fff;
+}
+
+.location-map__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  margin: 0;
+  place-items: center;
+  padding: 2rem;
+  background: #382b28;
+  color: #fff;
+  text-align: center;
+}
+
 .celebration-layout {
   position: relative;
   isolation: isolate;
@@ -2818,6 +2878,14 @@ body[data-page='admin-login'] h1 {
   color: #6f5c57;
 }
 
+.admin-login__top,
+.admin-topbar__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .admin-brand {
   display: flex;
   align-items: baseline;
@@ -2938,6 +3006,31 @@ body[data-page='admin-login'] h1 {
   color: var(--burgundy);
   cursor: pointer;
   font-weight: 700;
+}
+
+.admin-language-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #a08c86;
+  white-space: nowrap;
+}
+
+.admin-language-switcher button {
+  padding: 0.25rem 0.35rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #806b65;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.admin-language-switcher button:hover,
+.admin-language-switcher button.is-active {
+  background: #f2e6e8;
+  color: var(--burgundy);
 }
 
 .admin-menu-toggle {
@@ -3565,6 +3658,18 @@ body[data-page='admin-login'] h1 {
 
   .admin-identity span {
     max-width: 145px;
+  }
+
+  .admin-topbar__actions {
+    gap: 0.6rem;
+  }
+
+  .admin-identity {
+    gap: 0.6rem;
+  }
+
+  .admin-identity span {
+    display: none;
   }
 
   .admin-workspace > main {

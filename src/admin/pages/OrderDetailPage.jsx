@@ -4,10 +4,12 @@ import { requireSupabase } from '../../lib/supabase';
 import { money } from '../../utils/i18n';
 import AdminPage from '../components/AdminPage';
 import { AdminError, AdminLoading, SaveNotice } from '../components/AdminState';
+import { useAdminLanguage } from '../i18n/AdminLanguageContext';
 
 const Info = ({ label, children }) => <div className="admin-detail-row"><span>{label}</span><strong>{children || '—'}</strong></div>;
 
 export default function OrderDetailPage() {
+  const { locale, t } = useAdminLanguage();
   const { id } = useParams();
   const { refreshPending } = useOutletContext();
   const [order, setOrder] = useState(null);
@@ -24,26 +26,29 @@ export default function OrderDetailPage() {
   useEffect(() => { load(); }, [load]);
 
   const confirmOrder = async () => {
-    if (!window.confirm(`Chuyển Order #${id} từ PENDING sang CONFIRMED?`)) return;
+    if (!window.confirm(t('orders.confirmPrompt', { id }))) return;
     setConfirming(true);
     const { data, error: updateError } = await requireSupabase().rpc('confirm_order', { p_order_id: Number(id) }).single();
     if (updateError) setStatus({ type: 'error', message: updateError.message });
     else {
       setOrder((current) => ({ ...current, status: data.order_status, confirmed_at: data.confirmed_at }));
-      setStatus({ type: 'success', message: 'Order đã chuyển sang CONFIRMED.' });
+      setStatus({ type: 'success', message: t('orders.confirmedSuccess') });
       await refreshPending();
     }
     setConfirming(false);
   };
 
-  return <AdminPage title={`Order #${id}`} description="Snapshot item chỉ đọc, không thay đổi sau khi order đã tồn tại." action={<Link className="admin-button admin-button--secondary" to="/admin/orders">Quay lại Orders</Link>}>
+  const statusLabel = (value) => t(value === 'PENDING' ? 'orders.pending' : 'orders.confirmed');
+  const fulfillmentLabel = (value) => t(value === 'DELIVERY' ? 'orders.delivery' : 'orders.pickup');
+
+  return <AdminPage title={`${t('orders.order')} #${id}`} description={t('orders.detailDescription')} action={<Link className="admin-button admin-button--secondary" to="/admin/orders">{t('orders.back')}</Link>}>
     {loading ? <AdminLoading /> : error ? <AdminError error={error} retry={load} /> : <>
       <div className="admin-detail-grid">
-        <section className="admin-card"><h2>Customer</h2><Info label="Name">{order.customer_name}</Info><Info label="Phone">{order.customer_phone}</Info><Info label="Email">{order.customer_email}</Info></section>
-        <section className="admin-card"><h2>Fulfillment</h2><Info label="Type">{order.fulfillment_type}</Info><Info label="Address">{order.delivery_address}</Info><Info label="Delivery note">{order.delivery_note}</Info><Info label="Requested">{[order.requested_fulfillment_date, order.requested_fulfillment_time].filter(Boolean).join(' · ')}</Info></section>
-        <section className="admin-card"><h2>Order</h2><Info label="Created">{new Date(order.created_at).toLocaleString('vi-VN')}</Info><Info label="Status">{order.status}</Info><Info label="Note">{order.order_note}</Info><Info label="Subtotal">{money(order.subtotal_amount)}</Info>{order.status === 'PENDING' && <button className="admin-button admin-button--primary" type="button" onClick={confirmOrder} disabled={confirming}>{confirming ? 'Đang xác nhận…' : 'Chuyển sang CONFIRMED'}</button>}<SaveNotice status={status} /></section>
+        <section className="admin-card"><h2>{t('orders.customerSection')}</h2><Info label={t('common.name')}>{order.customer_name}</Info><Info label={t('common.phone')}>{order.customer_phone}</Info><Info label={t('common.email')}>{order.customer_email}</Info></section>
+        <section className="admin-card"><h2>{t('orders.fulfillmentSection')}</h2><Info label={t('common.type')}>{fulfillmentLabel(order.fulfillment_type)}</Info><Info label={t('orders.deliveryAddress')}>{order.delivery_address}</Info><Info label={t('orders.deliveryNote')}>{order.delivery_note}</Info><Info label={t('orders.requested')}>{[order.requested_fulfillment_date, order.requested_fulfillment_time].filter(Boolean).join(' · ')}</Info></section>
+        <section className="admin-card"><h2>{t('orders.orderSection')}</h2><Info label={t('common.created')}>{new Date(order.created_at).toLocaleString(locale === 'ko' ? 'ko-KR' : 'vi-VN')}</Info><Info label={t('common.status')}>{statusLabel(order.status)}</Info><Info label={t('common.note')}>{order.order_note}</Info><Info label={t('common.subtotal')}>{money(order.subtotal_amount)}</Info>{order.status === 'PENDING' && <button className="admin-button admin-button--primary" type="button" onClick={confirmOrder} disabled={confirming}>{confirming ? t('orders.confirming') : t('orders.confirmAction')}</button>}<SaveNotice status={status} /></section>
       </div>
-      <section className="admin-card"><h2>Items</h2><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Product snapshot</th><th>Price</th><th>Qty</th><th>Size</th><th>Flavor</th><th>Celebration</th><th>Subtotal</th></tr></thead><tbody>
+      <section className="admin-card"><h2>{t('common.items')}</h2><div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>{t('orders.productSnapshot')}</th><th>{t('common.price')}</th><th>{t('common.quantity')}</th><th>{t('orders.size')}</th><th>{t('orders.flavor')}</th><th>{t('orders.celebration')}</th><th>{t('common.subtotal')}</th></tr></thead><tbody>
         {order.order_items.map((item) => <tr key={item.id}><td>{item.product_name_vi}<small>{item.product_name_ko || ''}</small></td><td>{money(item.unit_price_amount)}</td><td>{item.quantity}</td><td>{item.selected_size_label_vi || '—'}</td><td>{item.selected_flavor_label_vi || '—'}</td><td>{item.is_celebration ? <>{item.celebration_required_date}<small>{item.celebration_note || ''}</small></> : '—'}</td><td>{money(item.line_subtotal_amount)}</td></tr>)}
       </tbody></table></div></section>
     </>}

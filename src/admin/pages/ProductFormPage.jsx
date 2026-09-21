@@ -7,6 +7,7 @@ import { AdminError, AdminLoading, SaveNotice } from '../components/AdminState';
 import ImageUploadField from '../components/ImageUploadField';
 import ProductOptionsEditor from '../components/ProductOptionsEditor';
 import TranslationPanel from '../components/TranslationPanel';
+import { useAdminLanguage } from '../i18n/AdminLanguageContext';
 
 const emptyProduct = {
   slug: '', category_id: '', name_vi: '', name_ko: '', short_description_vi: '', short_description_ko: '',
@@ -15,6 +16,7 @@ const emptyProduct = {
 };
 
 export default function ProductFormPage() {
+  const { t } = useAdminLanguage();
   const { id } = useParams();
   const isNew = id === 'new';
   const navigate = useNavigate();
@@ -67,11 +69,11 @@ export default function ProductFormPage() {
   const save = async (event) => {
     event.preventDefault();
     setStatus(null);
-    if (!draft.name_vi.trim()) return setStatus({ type: 'error', message: 'Tên VI là bắt buộc.' });
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug)) return setStatus({ type: 'error', message: 'Slug phải ở dạng kebab-case.' });
-    if (!draft.category_id) return setStatus({ type: 'error', message: 'Vui lòng chọn Category.' });
-    if (Number(draft.price_amount) < 0) return setStatus({ type: 'error', message: 'Giá phải lớn hơn hoặc bằng 0.' });
-    if (draft.active && !draft.image_path?.trim()) return setStatus({ type: 'error', message: 'Product active phải có ảnh. Hãy lưu inactive, upload ảnh rồi bật active.' });
+    if (!draft.name_vi.trim()) return setStatus({ type: 'error', message: t('products.validationName') });
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(draft.slug)) return setStatus({ type: 'error', message: t('products.validationSlug') });
+    if (!draft.category_id) return setStatus({ type: 'error', message: t('products.validationCategory') });
+    if (Number(draft.price_amount) < 0) return setStatus({ type: 'error', message: t('products.validationPrice') });
+    if (draft.active && !draft.image_path?.trim()) return setStatus({ type: 'error', message: t('products.validationImage') });
 
     setSaving(true);
     const payload = {
@@ -102,7 +104,7 @@ export default function ProductFormPage() {
     else {
       setOriginal(result.data);
       setDraft(result.data);
-      setStatus({ type: 'success', message: 'Product đã được lưu.' });
+      setStatus({ type: 'success', message: t('products.saved') });
     }
     setSaving(false);
   };
@@ -115,34 +117,34 @@ export default function ProductFormPage() {
   };
 
   return (
-    <AdminPage title={isNew ? 'Thêm Product' : `Edit Product #${id}`} description="Các field khớp trực tiếp schema hiện tại." action={<Link className="admin-button admin-button--secondary" to="/admin/products">Quay lại list</Link>}>
+    <AdminPage title={isNew ? t('products.add') : t('products.edit', { id })} description={t('products.schemaDescription')} action={<Link className="admin-button admin-button--secondary" to="/admin/products">{t('products.backToList')}</Link>}>
       {loading ? <AdminLoading /> : error ? <AdminError error={error} retry={load} /> : (
         <>
           <form className="admin-card admin-form" onSubmit={save}>
-            <div className="admin-form-section"><h2>Thông tin chung</h2><div className="admin-form-grid">
+            <div className="admin-form-section"><h2>{t('products.general')}</h2><div className="admin-form-grid">
               <label className="admin-field"><span>Slug *</span><input value={draft.slug} onChange={(event) => change('slug', event.target.value)} required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" /></label>
-              <label className="admin-field"><span>Category *</span><select value={draft.category_id} onChange={(event) => change('category_id', event.target.value)} required><option value="">Chọn category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name_vi}{category.active ? '' : ' (inactive)'}</option>)}</select></label>
-              <label className="admin-field"><span>Tên VI *</span><input value={draft.name_vi} onChange={(event) => change('name_vi', event.target.value)} required /></label>
-              <label className="admin-field"><span>Giá (VND) *</span><input type="number" min="0" step="1000" value={draft.price_amount} onChange={(event) => change('price_amount', event.target.value)} required /></label>
-              <label className="admin-field admin-field--wide"><span>Mô tả ngắn VI</span><textarea rows="2" value={draft.short_description_vi || ''} onChange={(event) => change('short_description_vi', event.target.value)} /></label>
-              <label className="admin-field admin-field--wide"><span>Mô tả VI</span><textarea rows="5" value={draft.description_vi || ''} onChange={(event) => change('description_vi', event.target.value)} /></label>
-              <label className="admin-field"><span>Display order</span><input type="number" min="0" value={draft.display_order} onChange={(event) => change('display_order', event.target.value)} /></label>
+              <label className="admin-field"><span>{t('common.category')} *</span><select value={draft.category_id} onChange={(event) => change('category_id', event.target.value)} required><option value="">{t('products.selectCategory')}</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name_vi}{category.active ? '' : ` (${t('products.inactiveSuffix')})`}</option>)}</select></label>
+              <label className="admin-field"><span>{t('products.nameVi')} *</span><input value={draft.name_vi} onChange={(event) => change('name_vi', event.target.value)} required /></label>
+              <label className="admin-field"><span>{t('common.price')} (VND) *</span><input type="number" min="0" step="1000" value={draft.price_amount} onChange={(event) => change('price_amount', event.target.value)} required /></label>
+              <label className="admin-field admin-field--wide"><span>{t('products.shortDescriptionVi')}</span><textarea rows="2" value={draft.short_description_vi || ''} onChange={(event) => change('short_description_vi', event.target.value)} /></label>
+              <label className="admin-field admin-field--wide"><span>{t('products.descriptionVi')}</span><textarea rows="5" value={draft.description_vi || ''} onChange={(event) => change('description_vi', event.target.value)} /></label>
+              <label className="admin-field"><span>{t('common.displayOrder')}</span><input type="number" min="0" value={draft.display_order} onChange={(event) => change('display_order', event.target.value)} /></label>
             </div></div>
 
             <TranslationPanel status={draft.ko_translation_status}>
               <div className="admin-form-grid">
-                <label className="admin-field"><span>Tên KO</span><input value={draft.name_ko || ''} onChange={(event) => change('name_ko', event.target.value)} /></label>
-                <label className="admin-field admin-field--wide"><span>Mô tả ngắn KO</span><textarea rows="2" value={draft.short_description_ko || ''} onChange={(event) => change('short_description_ko', event.target.value)} /></label>
-                <label className="admin-field admin-field--wide"><span>Mô tả KO</span><textarea rows="5" value={draft.description_ko || ''} onChange={(event) => change('description_ko', event.target.value)} /></label>
+                <label className="admin-field"><span>{t('products.nameKo')}</span><input value={draft.name_ko || ''} onChange={(event) => change('name_ko', event.target.value)} /></label>
+                <label className="admin-field admin-field--wide"><span>{t('products.shortDescriptionKo')}</span><textarea rows="2" value={draft.short_description_ko || ''} onChange={(event) => change('short_description_ko', event.target.value)} /></label>
+                <label className="admin-field admin-field--wide"><span>{t('products.descriptionKo')}</span><textarea rows="5" value={draft.description_ko || ''} onChange={(event) => change('description_ko', event.target.value)} /></label>
               </div>
             </TranslationPanel>
 
             <div className="admin-check-grid">
-              {[['active', 'Active'], ['available', 'Available'], ['featured', 'Featured'], ['best_seller', 'Best seller']].map(([field, label]) => <label className="admin-check" key={field}><input type="checkbox" checked={Boolean(draft[field])} onChange={(event) => change(field, event.target.checked)} /><span>{label}</span></label>)}
+              {[['active', t('common.active')], ['available', t('common.available')], ['featured', t('common.featured')], ['best_seller', t('common.bestSeller')]].map(([field, label]) => <label className="admin-check" key={field}><input type="checkbox" checked={Boolean(draft[field])} onChange={(event) => change(field, event.target.checked)} /><span>{label}</span></label>)}
             </div>
-            <ImageUploadField label="Ảnh Product" path={draft.image_path} folder={`products/${id}`} disabled={isNew} onUploaded={saveImagePath} />
+            <ImageUploadField label={t('products.image')} path={draft.image_path} folder={`products/${id}`} disabled={isNew} onUploaded={saveImagePath} />
             <SaveNotice status={status} />
-            <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? 'Đang lưu…' : 'Lưu Product'}</button>
+            <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? t('common.saving') : t('products.save')}</button>
           </form>
           {!isNew && <ProductOptionsEditor productId={Number(id)} kind="size" initialOptions={sizes} onRefresh={load} />}
           {!isNew && <ProductOptionsEditor productId={Number(id)} kind="flavor" initialOptions={flavors} onRefresh={load} />}

@@ -4,6 +4,7 @@ import { translationMetaForSave } from '../../lib/translation';
 import AdminPage from '../components/AdminPage';
 import { AdminError, AdminLoading, SaveNotice } from '../components/AdminState';
 import TranslationPanel from '../components/TranslationPanel';
+import { useAdminLanguage } from '../i18n/AdminLanguageContext';
 
 const emptySettings = {
   id: 1, tagline_vi: '', tagline_ko: '', phone: '', email: '', address_vi: '', address_ko: '', opening_hours_vi: '', opening_hours_ko: '',
@@ -11,6 +12,7 @@ const emptySettings = {
 };
 
 export default function SiteSettingsPage() {
+  const { t } = useAdminLanguage();
   const [original, setOriginal] = useState(null);
   const [draft, setDraft] = useState(emptySettings);
   const [socialJson, setSocialJson] = useState('{}');
@@ -41,7 +43,7 @@ export default function SiteSettingsPage() {
       socialLinks = JSON.parse(socialJson || '{}');
       if (!socialLinks || Array.isArray(socialLinks) || typeof socialLinks !== 'object') throw new Error();
     } catch {
-      setStatus({ type: 'error', message: 'Social links phải là một JSON object hợp lệ.' });
+      setStatus({ type: 'error', message: t('siteSettings.socialValidation') });
       return;
     }
     setSaving(true);
@@ -63,30 +65,30 @@ export default function SiteSettingsPage() {
     const { data, error: saveError } = await requireSupabase().from('site_settings').upsert(payload).select('*').single();
     if (saveError) setStatus({ type: 'error', message: saveError.message });
     else {
-      setOriginal(data); setDraft(data); setStatus({ type: 'success', message: 'Site Settings đã được lưu. Public site sẽ thấy thay đổi sau khi refresh.' });
+      setOriginal(data); setDraft(data); setStatus({ type: 'success', message: t('siteSettings.saved') });
     }
     setSaving(false);
   };
 
-  return <AdminPage title="Site Settings" description="Thông tin một chi nhánh Hlime V1.">
+  return <AdminPage title={t('siteSettings.title')} description={t('siteSettings.description')}>
     {loading ? <AdminLoading /> : error ? <AdminError error={error} retry={load} /> : <form className="admin-card admin-form" onSubmit={save}>
       <div className="admin-form-grid">
-        <label className="admin-field admin-field--wide"><span>Tagline VI</span><input value={draft.tagline_vi || ''} onChange={(event) => change('tagline_vi', event.target.value)} /></label>
-        <label className="admin-field"><span>Phone</span><input type="tel" value={draft.phone || ''} onChange={(event) => change('phone', event.target.value)} /></label>
-        <label className="admin-field"><span>Email</span><input type="email" value={draft.email || ''} onChange={(event) => change('email', event.target.value)} /></label>
-        <label className="admin-field admin-field--wide"><span>Address VI</span><textarea rows="3" value={draft.address_vi || ''} onChange={(event) => change('address_vi', event.target.value)} /></label>
-        <label className="admin-field admin-field--wide"><span>Opening hours VI</span><input value={draft.opening_hours_vi || ''} onChange={(event) => change('opening_hours_vi', event.target.value)} /></label>
-        <label className="admin-field"><span>Map URL</span><input type="url" value={draft.map_url || ''} onChange={(event) => change('map_url', event.target.value)} /></label>
-        <label className="admin-field"><span>Preferred contact channel</span><input value={draft.preferred_contact_channel || ''} onChange={(event) => change('preferred_contact_channel', event.target.value)} /></label>
-        <label className="admin-field admin-field--wide"><span>Social links (JSON object)</span><textarea rows="5" value={socialJson} onChange={(event) => setSocialJson(event.target.value)} spellCheck="false" /></label>
+        <label className="admin-field admin-field--wide"><span>{t('siteSettings.taglineVi')}</span><input value={draft.tagline_vi || ''} onChange={(event) => change('tagline_vi', event.target.value)} /></label>
+        <label className="admin-field"><span>{t('common.phone')}</span><input type="tel" value={draft.phone || ''} onChange={(event) => change('phone', event.target.value)} /></label>
+        <label className="admin-field"><span>{t('common.email')}</span><input type="email" value={draft.email || ''} onChange={(event) => change('email', event.target.value)} /></label>
+        <label className="admin-field admin-field--wide"><span>{t('siteSettings.addressVi')}</span><textarea rows="3" value={draft.address_vi || ''} onChange={(event) => change('address_vi', event.target.value)} /></label>
+        <label className="admin-field admin-field--wide"><span>{t('siteSettings.hoursVi')}</span><input value={draft.opening_hours_vi || ''} onChange={(event) => change('opening_hours_vi', event.target.value)} /></label>
+        <label className="admin-field"><span>{t('siteSettings.mapUrl')}</span><input type="url" value={draft.map_url || ''} onChange={(event) => change('map_url', event.target.value)} /></label>
+        <label className="admin-field"><span>{t('siteSettings.preferredContact')}</span><input value={draft.preferred_contact_channel || ''} onChange={(event) => change('preferred_contact_channel', event.target.value)} /></label>
+        <label className="admin-field admin-field--wide"><span>{t('siteSettings.socialLinks')}</span><textarea rows="5" value={socialJson} onChange={(event) => setSocialJson(event.target.value)} spellCheck="false" /></label>
       </div>
       <TranslationPanel status={draft.ko_translation_status}><div className="admin-form-grid">
-        <label className="admin-field admin-field--wide"><span>Tagline KO</span><input value={draft.tagline_ko || ''} onChange={(event) => change('tagline_ko', event.target.value)} /></label>
-        <label className="admin-field admin-field--wide"><span>Address KO</span><textarea rows="3" value={draft.address_ko || ''} onChange={(event) => change('address_ko', event.target.value)} /></label>
-        <label className="admin-field admin-field--wide"><span>Opening hours KO</span><input value={draft.opening_hours_ko || ''} onChange={(event) => change('opening_hours_ko', event.target.value)} /></label>
+        <label className="admin-field admin-field--wide"><span>{t('siteSettings.taglineKo')}</span><input value={draft.tagline_ko || ''} onChange={(event) => change('tagline_ko', event.target.value)} /></label>
+        <label className="admin-field admin-field--wide"><span>{t('siteSettings.addressKo')}</span><textarea rows="3" value={draft.address_ko || ''} onChange={(event) => change('address_ko', event.target.value)} /></label>
+        <label className="admin-field admin-field--wide"><span>{t('siteSettings.hoursKo')}</span><input value={draft.opening_hours_ko || ''} onChange={(event) => change('opening_hours_ko', event.target.value)} /></label>
       </div></TranslationPanel>
       <SaveNotice status={status} />
-      <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? 'Đang lưu…' : 'Lưu Site Settings'}</button>
+      <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? t('common.saving') : t('siteSettings.save')}</button>
     </form>}
   </AdminPage>;
 }

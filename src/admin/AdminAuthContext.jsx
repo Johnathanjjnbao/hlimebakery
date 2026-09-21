@@ -23,7 +23,7 @@ export function AdminAuthProvider({ children }) {
 
     if (allowlistError || !data) {
       setUser(null);
-      setError(allowlistError?.message || 'Tài khoản này không có quyền truy cập Admin.');
+      setError('AUTH_NO_PERMISSION');
       await supabase.auth.signOut();
       setLoading(false);
       return false;
@@ -40,7 +40,7 @@ export function AdminAuthProvider({ children }) {
     const restore = async () => {
       if (!supabase) {
         if (active) {
-          setError('Supabase chưa được cấu hình.');
+          setError('SUPABASE_MISSING');
           setLoading(false);
         }
         return;
@@ -48,7 +48,7 @@ export function AdminAuthProvider({ children }) {
       const { data, error: sessionError } = await supabase.auth.getSession();
       if (!active) return;
       if (sessionError) {
-        setError(sessionError.message);
+        setError('SESSION_ERROR');
         setLoading(false);
         return;
       }
@@ -75,11 +75,11 @@ export function AdminAuthProvider({ children }) {
     const { data, error: signInError } = await client.auth.signInWithPassword({ email, password });
     if (signInError) {
       setLoading(false);
-      setError(signInError.message);
+      setError('LOGIN_FAILED');
       throw signInError;
     }
     const allowed = await verifyAdmin(data.user);
-    if (!allowed) throw new Error('Tài khoản này không nằm trong Admin allowlist.');
+    if (!allowed) throw new Error('ADMIN_ALLOWLIST_REQUIRED');
     return data.user;
   }, [verifyAdmin]);
 

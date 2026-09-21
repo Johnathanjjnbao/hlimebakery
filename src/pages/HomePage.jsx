@@ -3,6 +3,7 @@ import DemoImage from '../components/DemoImage';
 import DemoNote from '../components/DemoNote';
 import ProductCard from '../components/ProductCard';
 import SectionHeading from '../components/SectionHeading';
+import LocationMap from '../components/LocationMap';
 import { useApp } from '../context/AppContext';
 import { useData } from '../context/DataContext';
 import { money, textFor } from '../utils/i18n';
@@ -215,7 +216,7 @@ export default function HomePage() {
             <AppLink className="button button--primary" to="/contact">{locale === 'ko' ? '연락처 보기' : 'Thông tin liên hệ'}</AppLink>
             {(dataError || source !== 'supabase') && <DemoNote>{dataNote}</DemoNote>}
           </div>
-          <div className="contact-band__map" aria-label={locale === 'ko' ? 'Hlime 매장 위치' : 'Vị trí cửa hàng Hlime'}><div className="map-pin"><span>H</span></div></div>
+          <LocationMap className="contact-band__map" address={siteContent.address} mapUrl={siteContent.mapUrl} locale={locale} />
         </div>
       </section>}
     </main>
