@@ -6,12 +6,13 @@ import DemoNote from '../components/DemoNote';
 import ProductCard from '../components/ProductCard';
 import SectionHeading from '../components/SectionHeading';
 import { useApp } from '../context/AppContext';
-import { getProduct, products } from '../data/products';
+import { useData } from '../context/DataContext';
 import { money, textFor } from '../utils/i18n';
 
 export default function ProductPage() {
   const { id } = useParams();
   const { locale, addToCart } = useApp();
+  const { getProduct, products, source, error: dataError } = useData();
   const [quantity, setQuantity] = useState(1);
   const product = getProduct(id);
 
@@ -36,7 +37,7 @@ export default function ProductPage() {
     );
   }
 
-  const related = products.filter((item) => ['milk-bread', 'rose-croissant', 'lemon-choux'].includes(item.id) && item.id !== product.id);
+  const related = products.filter((item) => item.active && item.id !== product.id && (item.category === product.category || item.bestSeller)).slice(0, 3);
 
   return (
     <main id="main-content">
@@ -44,16 +45,16 @@ export default function ProductPage() {
         <div className="container">
           <AppLink className="button button--text" to="/menu">{locale === 'ko' ? '메뉴로 돌아가기' : 'Quay lại menu'}</AppLink>
           <div className="product-detail" data-product-id={product.id}>
-            <div className="product-detail__image"><DemoImage src={product.image} alt={`${textFor(product.name, locale)} — demo image`} /></div>
+            <div className="product-detail__image"><DemoImage src={product.image} alt={textFor(product.name, locale)} /></div>
             <div className="product-detail__copy">
-              <span className="eyebrow">{textFor(product.categoryName, locale)} · DEMO</span>
+              <span className="eyebrow">{textFor(product.categoryName, locale)} · {source === 'supabase' ? 'HLIME' : 'DEMO'}</span>
               <h1>{textFor(product.name, locale)}</h1>
               <span className="price">{money(product.price)}</span>
               <p className="description">{textFor(product.description, locale)}</p>
-              <DemoNote>{locale === 'ko' ? '상품명, 설명, 가격, 이미지는 데모이며 추후 Admin에서 관리됩니다.' : 'Tên, mô tả, giá và ảnh là dữ liệu demo; sau này được quản lý qua Admin.'}</DemoNote>
+              {(dataError || source !== 'supabase') && <DemoNote>{dataError || (locale === 'ko' ? '예비 데모 상품입니다.' : 'Sản phẩm demo dự phòng.')}</DemoNote>}
               <div className="product-points">
                 <div className="product-point">{locale === 'ko' ? '매일 소량으로 정성껏 준비합니다.' : 'Làm mới mỗi ngày với số lượng vừa phải.'}</div>
-                <div className="product-point">{locale === 'ko' ? '결제는 포함되지 않은 프론트엔드 데모입니다.' : 'Frontend demo chưa có thanh toán online.'}</div>
+                <div className="product-point">{locale === 'ko' ? '온라인 결제 없이 주문 요청을 보냅니다.' : 'Gửi yêu cầu đặt bánh, không thanh toán online.'}</div>
               </div>
               <div className="quantity-row">
                 <span className="fieldset-label">{locale === 'ko' ? '수량' : 'Số lượng'}</span>
@@ -83,4 +84,3 @@ export default function ProductPage() {
     </main>
   );
 }
-

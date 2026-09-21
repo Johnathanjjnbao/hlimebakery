@@ -1,77 +1,90 @@
-import { useState } from 'react';
 import DemoImage from '../components/DemoImage';
 import { useApp } from '../context/AppContext';
-import { contactContent, siteContent } from '../data/siteContent';
+import { useData } from '../context/DataContext';
+import { contactContent } from '../data/siteContent';
 import { textFor } from '../utils/i18n';
 
+const demoSections = {
+  hero: { eyebrow: contactContent.hero.eyebrow, title: contactContent.hero.title, body: contactContent.hero.text },
+  atmosphere: {
+    eyebrow: { vi: 'Một góc Hlime', ko: 'Hlime의 한 장면' },
+    title: { vi: 'Hlime Bakery & Pâtisserie', ko: '흘라임 베이커리 & 파티세리' },
+    image: contactContent.atmosphereImage,
+  },
+  support: {
+    eyebrow: { vi: 'Cần Hlime tư vấn?', ko: '상담이 필요하신가요?' },
+    title: { vi: 'Liên hệ theo cách thuận tiện nhất', ko: '가장 편한 방법으로 문의해 주세요' },
+    body: {
+      vi: 'Hlime sẽ hỗ trợ lựa chọn sản phẩm, Celebration và thông tin nhận bánh.',
+      ko: '상품 선택, 셀러브레이션 케이크와 수령 정보를 안내해 드립니다.',
+    },
+  },
+};
+
 export default function ContactPage() {
-  const { locale, showToast } = useApp();
-  const [form, setForm] = useState({ name: '', phone: '', message: '' });
-  const update = (field, value) => setForm((current) => ({ ...current, [field]: value }));
-  const submit = (event) => {
-    event.preventDefault();
-    showToast(locale === 'ko' ? '데모 폼입니다. 메시지는 전송되지 않았습니다.' : 'Form demo — chưa gửi tin nhắn thật.');
-  };
+  const { locale } = useApp();
+  const { site: siteContent, pageContent, source } = useData();
+  const managed = pageContent.contact || {};
+  const section = (key) => managed[key] || (source === 'demo' ? demoSections[key] : null);
+  const hero = section('hero');
+  const atmosphere = section('atmosphere');
+  const support = section('support');
+  const preferredHref = siteContent.preferredContactChannel === 'email' ? `mailto:${siteContent.email}` : siteContent.phoneHref;
+  const preferredLabel = siteContent.preferredContactChannel === 'email'
+    ? (locale === 'ko' ? '이메일 보내기' : 'Gửi email')
+    : (locale === 'ko' ? '전화하기' : 'Gọi Hlime');
 
   return (
     <main id="main-content">
-      <section className="page-hero page-hero--compact">
+      {hero && <section className="page-hero page-hero--compact">
         <div className="container page-hero__inner">
-          <p className="eyebrow">{textFor(contactContent.hero.eyebrow, locale)}</p>
-          <h1>{textFor(contactContent.hero.title, locale)}</h1>
-          <p>{textFor(contactContent.hero.text, locale)}</p>
+          <p className="eyebrow">{textFor(hero.eyebrow, locale)}</p>
+          <h1>{textFor(hero.title, locale)}</h1>
+          <p>{textFor(hero.body, locale)}</p>
         </div>
-      </section>
+      </section>}
 
       <section className="section">
         <div className="container contact-layout">
           <div className="contact-stack">
-            <figure className="contact-atmosphere" data-demo-admin="contact-atmosphere-media">
-              <DemoImage src={contactContent.atmosphereImage} alt={textFor(contactContent.atmosphereAlt, locale)} loading="eager" />
-              <figcaption><span>{locale === 'ko' ? 'Hlime의 한 장면 · 데모' : 'Một góc Hlime · Demo'}</span></figcaption>
-            </figure>
+            {atmosphere?.image && <figure className="contact-atmosphere">
+              <DemoImage src={atmosphere.image} alt={textFor(atmosphere.title, locale)} loading="eager" />
+              <figcaption><span>{textFor(atmosphere.eyebrow, locale)}</span></figcaption>
+            </figure>}
             <article className="contact-card">
               <p className="eyebrow">{locale === 'ko' ? '주소' : 'Địa chỉ'}</p>
-              <h2>{locale === 'ko' ? '흘라임 베이커리 & 파티세리' : 'Hlime Bakery & Pâtisserie'}</h2>
+              <h2>{textFor(atmosphere?.title, locale) || 'Hlime Bakery & Pâtisserie'}</h2>
               <p>{textFor(siteContent.address, locale)}</p>
-              <a className="text-link" href={siteContent.mapUrl} target="_blank" rel="noreferrer">{locale === 'ko' ? '지도 열기 ↗' : 'Mở bản đồ ↗'}</a>
+              {siteContent.mapUrl && <a className="text-link" href={siteContent.mapUrl} target="_blank" rel="noreferrer">{locale === 'ko' ? '지도 열기 ↗' : 'Mở bản đồ ↗'}</a>}
             </article>
             <div className="contact-card-grid">
               <article className="contact-card contact-card--small">
                 <p className="eyebrow">{locale === 'ko' ? '연락처' : 'Liên hệ'}</p>
-                <p><a href={siteContent.phoneHref}>{siteContent.phone}</a><br /><a href={`mailto:${siteContent.email}`}>{siteContent.email}</a></p>
+                <p>{siteContent.phone && <><a href={siteContent.phoneHref}>{siteContent.phone}</a><br /></>}{siteContent.email && <a href={`mailto:${siteContent.email}`}>{siteContent.email}</a>}</p>
               </article>
               <article className="contact-card contact-card--small">
                 <p className="eyebrow">{locale === 'ko' ? '영업시간' : 'Giờ mở cửa'}</p>
-                <p>{locale === 'ko' ? '월요일 – 일요일' : 'Thứ Hai – Chủ Nhật'}<br />08:00 – 21:00</p>
+                <p>{textFor(siteContent.hours, locale)}</p>
               </article>
             </div>
-            <div className="map-placeholder" role="img" aria-label={locale === 'ko' ? '데모 매장 지도' : 'Vị trí cửa hàng demo trên bản đồ'}>
-              <span aria-hidden="true">H</span><p>{locale === 'ko' ? '데모 매장 지도' : 'Bản đồ chi nhánh demo'}</p>
+            <div className="map-placeholder" role="img" aria-label={locale === 'ko' ? 'Hlime 매장 위치' : 'Vị trí cửa hàng Hlime'}>
+              <span aria-hidden="true">H</span><p>{locale === 'ko' ? 'Hlime 매장 위치' : 'Vị trí cửa hàng Hlime'}</p>
             </div>
           </div>
 
-          <form className="form-card" onSubmit={submit}>
-            <p className="eyebrow">{locale === 'ko' ? '상담이 필요하신가요?' : 'Cần Hlime tư vấn?'}</p>
-            <h2>{locale === 'ko' ? '메시지를 남겨주세요' : 'Để lại lời nhắn'}</h2>
-            <p className="muted">{locale === 'ko' ? '이 양식은 프론트엔드 데모이며 실제로 전송되지 않습니다.' : 'Form chỉ mô phỏng giao diện, chưa gửi dữ liệu thật.'}</p>
-            <label className="field">
-              <span>{locale === 'ko' ? '이름' : 'Họ và tên'}</span>
-              <input type="text" name="name" autoComplete="name" required value={form.name} onChange={(event) => update('name', event.target.value)} placeholder={locale === 'ko' ? '이름' : 'Tên của bạn'} />
-            </label>
-            <label className="field">
-              <span>{locale === 'ko' ? '전화번호' : 'Số điện thoại'}</span>
-              <input type="tel" name="phone" autoComplete="tel" required value={form.phone} onChange={(event) => update('phone', event.target.value)} placeholder={locale === 'ko' ? '예: 090 123 4567' : 'Ví dụ: 090 123 4567'} />
-            </label>
-            <label className="field">
-              <span>{locale === 'ko' ? '문의 내용' : 'Nội dung cần hỗ trợ'}</span>
-              <textarea name="message" rows="5" required value={form.message} onChange={(event) => update('message', event.target.value)} placeholder={locale === 'ko' ? '어떤 디저트나 행사를 준비하고 계신가요?' : 'Bạn đang quan tâm món bánh hoặc dịp nào?'} />
-            </label>
-            <button className="button button--primary button--full" type="submit">{locale === 'ko' ? '데모 메시지 보내기' : 'Gửi thử lời nhắn'}</button>
-          </form>
+          {support && <section className="form-card" aria-labelledby="contact-support-title">
+            <p className="eyebrow">{textFor(support.eyebrow, locale)}</p>
+            <h2 id="contact-support-title">{textFor(support.title, locale)}</h2>
+            <p className="muted">{textFor(support.body, locale)}</p>
+            <div className="admin-stack">
+              {preferredHref && <a className="button button--primary button--full" href={preferredHref}>{preferredLabel}</a>}
+              {siteContent.phoneHref && siteContent.preferredContactChannel === 'email' && <a className="button button--secondary button--full" href={siteContent.phoneHref}>{locale === 'ko' ? '전화하기' : 'Gọi điện'}</a>}
+              {siteContent.email && siteContent.preferredContactChannel !== 'email' && <a className="button button--secondary button--full" href={`mailto:${siteContent.email}`}>{locale === 'ko' ? '이메일 보내기' : 'Gửi email'}</a>}
+              {Object.entries(siteContent.socialLinks || {}).map(([name, url]) => url && <a className="text-link" href={url} target="_blank" rel="noreferrer" key={name}>{name}</a>)}
+            </div>
+          </section>}
         </div>
       </section>
     </main>
   );
 }
-

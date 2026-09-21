@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { lazy, Suspense, useEffect, useRef } from 'react';
 import { Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import { AppProvider, useApp } from './context/AppContext';
+import { DataProvider } from './context/DataContext';
 import AboutPage from './pages/AboutPage';
 import CartPage from './pages/CartPage';
 import CelebrationPage from './pages/CelebrationPage';
@@ -12,6 +13,8 @@ import MenuPage from './pages/MenuPage';
 import NotFoundPage from './pages/NotFoundPage';
 import ProductPage from './pages/ProductPage';
 import { pathWithoutLocale } from './utils/i18n';
+
+const AdminApp = lazy(() => import('./admin/AdminApp'));
 
 function pageMeta(pathname) {
   const path = pathWithoutLocale(pathname);
@@ -52,8 +55,10 @@ function Layout() {
 export default function App() {
   return (
     <AppProvider>
-      <Routes>
-        <Route element={<Layout />}>
+      <DataProvider>
+        <Routes>
+          <Route path="/admin/*" element={<Suspense fallback={<main className="admin-auth-loading">Đang tải Admin…</main>}><AdminApp /></Suspense>} />
+          <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/product/:id" element={<ProductPage />} />
@@ -71,9 +76,9 @@ export default function App() {
           <Route path="/ko/cart" element={<CartPage />} />
 
           <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
+          </Route>
+        </Routes>
+      </DataProvider>
     </AppProvider>
   );
 }
-

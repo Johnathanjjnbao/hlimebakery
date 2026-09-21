@@ -1,12 +1,12 @@
+import { useState } from 'react';
 import AppLink from '../components/AppLink';
 import DemoImage from '../components/DemoImage';
 import { useApp } from '../context/AppContext';
-import { celebrationFlavors, celebrationSizes } from '../data/celebration';
-import { getProduct } from '../data/products';
-import { siteContent } from '../data/siteContent';
+import { useData } from '../context/DataContext';
+import { buildOrderPayload, clearOrderRequestId, submitPublicOrder } from '../lib/orders';
 import { money, textFor } from '../utils/i18n';
 
-function optionSummary(options, locale) {
+function optionSummary(options, locale, celebrationSizes, celebrationFlavors) {
   if (!options) return '';
   const size = celebrationSizes.find((item) => item.id === options.size);
   const flavor = celebrationFlavors.find((item) => item.id === options.flavor);
@@ -26,28 +26,52 @@ export default function CartPage() {
     cartCount,
     updateCartQuantity,
     removeCartItem,
+    clearCart,
     orderDraft,
     updateOrderDraft,
     orderStatus,
     setOrderStatus,
     showToast,
   } = useApp();
+  const { getProduct, sizeOptions: celebrationSizes, flavorOptions: celebrationFlavors, site: siteContent, orderSettings } = useData();
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [orderReceipt, setOrderReceipt] = useState(null);
   const minDate = new Date().toISOString().split('T')[0];
   const validItems = cart.map((item, index) => ({ item, index, product: getProduct(item.productId) })).filter((entry) => entry.product);
   const subtotal = validItems.reduce((total, entry) => total + entry.product.price * entry.item.quantity, 0);
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault();
     if (!validItems.length) {
       showToast(locale === 'ko' ? '장바구니가 비어 있습니다.' : 'Giỏ hàng đang trống.');
       return;
     }
-    setOrderStatus('PENDING');
+    setSubmitting(true);
+    setSubmitError('');
+    setOrderReceipt(null);
+    try {
+      const payload = buildOrderPayload({ locale, orderDraft, items: validItems });
+      const receipt = await submitPublicOrder(payload);
+      setOrderReceipt(receipt);
+      setOrderStatus(receipt.order_status);
+      clearCart();
+      clearOrderRequestId();
+      showToast(locale === 'ko' ? '주문 요청을 보냈습니다.' : 'Đã gửi yêu cầu đặt bánh.');
+    } catch (error) {
+      setOrderStatus('');
+      setSubmitError(error.message || (locale === 'ko' ? '주문을 보낼 수 없습니다.' : 'Không thể gửi đơn hàng.'));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const input = (field) => ({
     value: orderDraft[field],
-    onChange: (event) => updateOrderDraft(field, event.target.value),
+    onChange: (event) => {
+      updateOrderDraft(field, event.target.value);
+      setSubmitError('');
+    },
   });
 
   return (
@@ -56,7 +80,7 @@ export default function CartPage() {
         <div className="container page-hero__inner">
           <p className="eyebrow">{locale === 'ko' ? 'V1 장바구니' : 'Giỏ hàng V1'}</p>
           <h1>{locale === 'ko' ? '주문 정보를 작성해 주세요' : 'Hoàn tất thông tin đặt bánh'}</h1>
-          <p>{locale === 'ko' ? '선택한 상품을 확인하고 정보를 입력한 뒤 픽업 또는 배송을 선택하세요. 이 프론트엔드 데모는 실제 주문이나 온라인 결제를 처리하지 않습니다.' : 'Kiểm tra món đã chọn, điền thông tin và chọn nhận tại cửa hàng hoặc giao hàng. Frontend demo chưa gửi đơn thật và chưa có thanh toán online.'}</p>
+          <p>{locale === 'ko' ? '선택한 상품을 확인하고 정보를 입력한 뒤 픽업 또는 배송을 선택하세요. 온라인 결제는 진행되지 않습니다.' : 'Kiểm tra món đã chọn, điền thông tin và chọn nhận tại cửa hàng hoặc giao hàng. Bước này không xử lý thanh toán online.'}</p>
         </div>
       </section>
 
@@ -72,16 +96,16 @@ export default function CartPage() {
                 <div className="empty-state">
                   <div className="empty-state__icon" aria-hidden="true">♡</div>
                   <h2>{locale === 'ko' ? '장바구니가 비어 있어요' : 'Giỏ hàng đang trống'}</h2>
-                  <p className="muted">{locale === 'ko' ? '오늘의 데모 메뉴에서 마음에 드는 디저트를 골라보세요.' : 'Hãy chọn một món bánh từ menu demo hôm nay.'}</p>
+                  <p className="muted">{locale === 'ko' ? '오늘의 메뉴에서 마음에 드는 디저트를 골라보세요.' : 'Hãy chọn một món bánh từ menu hôm nay.'}</p>
                   <AppLink className="button button--primary" to="/menu">{locale === 'ko' ? '메뉴 보기' : 'Xem menu'}</AppLink>
                 </div>
               ) : validItems.map(({ item, product, index }) => (
                 <article className="cart-item" key={`${product.id}-${JSON.stringify(item.options || {})}-${index}`}>
-                  <div className="cart-item__image"><DemoImage src={product.image} alt={`${textFor(product.name, locale)} — demo image`} /></div>
+                  <div className="cart-item__image"><DemoImage src={product.image} alt={textFor(product.name, locale)} /></div>
                   <div>
                     <span className="small muted">{textFor(product.categoryName, locale)}</span>
                     <h3>{textFor(product.name, locale)}</h3>
-                    {optionSummary(item.options, locale) && <div className="cart-item__options">{optionSummary(item.options, locale)}</div>}
+                    {optionSummary(item.options, locale, celebrationSizes, celebrationFlavors) && <div className="cart-item__options">{optionSummary(item.options, locale, celebrationSizes, celebrationFlavors)}</div>}
                     <div className="quantity-control">
                       <button type="button" onClick={() => updateCartQuantity(index, -1)} aria-label={locale === 'ko' ? '수량 줄이기' : 'Giảm số lượng'}>−</button>
                       <input type="number" value={item.quantity} min="1" readOnly aria-label={locale === 'ko' ? '수량' : 'Số lượng'} />
@@ -116,11 +140,11 @@ export default function CartPage() {
                   <div className="choice-grid">
                     <label className="choice-card">
                       <input type="radio" name="fulfillment" value="pickup" checked={orderDraft.fulfillment === 'pickup'} onChange={(event) => updateOrderDraft('fulfillment', event.target.value)} />
-                      <span><strong>{locale === 'ko' ? '매장 픽업' : 'Nhận tại cửa hàng'}</strong><small>{textFor(siteContent.addressShort, locale)}</small></span>
+                      <span><strong>{locale === 'ko' ? '매장 픽업' : 'Nhận tại cửa hàng'}</strong><small>{textFor(orderSettings.pickup_help, locale) || textFor(siteContent.addressShort, locale)}</small></span>
                     </label>
                     <label className="choice-card">
                       <input type="radio" name="fulfillment" value="delivery" checked={orderDraft.fulfillment === 'delivery'} onChange={(event) => updateOrderDraft('fulfillment', event.target.value)} />
-                      <span><strong>{locale === 'ko' ? '배송' : 'Giao hàng'}</strong><small>{locale === 'ko' ? '배송비는 Hlime 확인 후 안내됩니다' : 'Phí giao hàng sẽ được Hlime xác nhận'}</small></span>
+                      <span><strong>{locale === 'ko' ? '배송' : 'Giao hàng'}</strong><small>{textFor(orderSettings.delivery_help, locale)}</small></span>
                     </label>
                   </div>
                   {orderDraft.fulfillment === 'delivery' && (
@@ -153,10 +177,11 @@ export default function CartPage() {
             <div className="summary-row"><span>{locale === 'ko' ? '배송비' : 'Phí giao hàng'}</span><span>{locale === 'ko' ? '추후 확인' : 'Xác nhận sau'}</span></div>
             <div className="summary-total"><span>{locale === 'ko' ? '예상 합계' : 'Tổng tạm tính'}</span><strong>{money(subtotal)}</strong></div>
             <div className="notice-box notice-box--small"><strong>{locale === 'ko' ? '현재 결제는 진행되지 않습니다' : 'Không thanh toán ở bước này'}</strong><span>{locale === 'ko' ? '제출 후 주문은 PENDING 상태가 됩니다. Hlime이 연락해 확인한 뒤 CONFIRMED로 변경됩니다.' : 'Sau khi gửi, đơn ở trạng thái PENDING. Hlime sẽ liên hệ xác nhận trước khi chuyển sang CONFIRMED.'}</span></div>
-            <button className="button button--primary button--full" type="submit" form="frontend-order-form" disabled={!validItems.length}>{locale === 'ko' ? '데모 주문 제출' : 'Gửi thử đơn hàng'}</button>
-            <p className="form-helper">{locale === 'ko' ? '프론트엔드 데모는 실제 데이터를 전송하거나 주문을 생성하지 않습니다.' : 'Frontend demo không gửi dữ liệu hay tạo đơn thật.'}</p>
-            <div className={`order-status${orderStatus ? ' is-visible' : ''}`} aria-live="polite">
-              {orderStatus === 'PENDING' && <><strong>{locale === 'ko' ? '데모 상태: PENDING' : 'Trạng thái demo: PENDING'}</strong><br />{locale === 'ko' ? '실제 주문은 전송되지 않았습니다. 최종 버전에서는 Hlime 확인 후 CONFIRMED로 변경됩니다.' : 'Chưa có đơn thật nào được gửi. Ở bản chính thức, Hlime sẽ xác nhận rồi chuyển sang CONFIRMED.'}</>}
+            <button className="button button--primary button--full" type="submit" form="frontend-order-form" disabled={!validItems.length || submitting}>{submitting ? (locale === 'ko' ? '전송 중…' : 'Đang gửi…') : (locale === 'ko' ? '주문 요청 보내기' : 'Gửi yêu cầu đặt bánh')}</button>
+            <p className="form-helper">{textFor(orderSettings.submit_help, locale)}</p>
+            <div className={`order-status${orderStatus || submitError ? ' is-visible' : ''}${submitError ? ' order-status--error' : ''}`} aria-live="polite">
+              {orderStatus === 'PENDING' && <><strong>{locale === 'ko' ? '상태: PENDING' : 'Trạng thái: PENDING'}</strong>{orderReceipt?.order_id ? ` · #${orderReceipt.order_id}` : ''}<br />{textFor(orderSettings.pending_help, locale)}</>}
+              {submitError && <><strong>{locale === 'ko' ? '주문을 보내지 못했습니다.' : 'Chưa gửi được đơn hàng.'}</strong><br />{submitError}<br />{locale === 'ko' ? '장바구니와 입력 정보가 유지되었습니다. 다시 시도해 주세요.' : 'Giỏ hàng và thông tin đã được giữ nguyên. Bạn có thể thử lại.'}</>}
             </div>
           </aside>
         </div>
@@ -164,4 +189,3 @@ export default function CartPage() {
     </main>
   );
 }
-

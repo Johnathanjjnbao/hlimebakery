@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { siteContent } from '../data/siteContent';
 import { useApp } from '../context/AppContext';
+import { useData } from '../context/DataContext';
 import { pathWithoutLocale, textFor } from '../utils/i18n';
 import AppLink from './AppLink';
 import CartButton from './CartButton';
@@ -9,6 +9,7 @@ import LanguageSwitcher from './LanguageSwitcher';
 
 export default function Header() {
   const { locale } = useApp();
+  const { site: siteContent, source } = useData();
   const location = useLocation();
   const [open, setOpen] = useState(false);
   const currentPath = pathWithoutLocale(location.pathname);
@@ -37,9 +38,9 @@ export default function Header() {
     <>
       <a className="skip-link" href="#main-content">{locale === 'ko' ? '본문으로 건너뛰기' : 'Bỏ qua đến nội dung'}</a>
       <div className="demo-strip">
-        {locale === 'ko'
-          ? 'REACT 프론트엔드 · 데모 데이터 — 추후 Admin에서 관리'
-          : 'React Frontend · DEMO DATA — Sau này được quản lý qua Admin'}
+        {source === 'supabase'
+          ? `Hlime · ${textFor(siteContent.tagline, locale)}`
+          : (locale === 'ko' ? 'REACT 프론트엔드 · 예비 데모 데이터' : 'React Frontend · Dữ liệu demo dự phòng')}
       </div>
       <header className="site-header">
         <div className="container header-inner">

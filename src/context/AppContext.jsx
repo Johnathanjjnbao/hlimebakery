@@ -80,6 +80,10 @@ export function AppProvider({ children }) {
     setCart((current) => current.filter((_, itemIndex) => itemIndex !== index));
   }, []);
 
+  const clearCart = useCallback(() => {
+    setCart([]);
+  }, []);
+
   const updateCelebrationDraft = useCallback((field, value) => {
     setCelebrationDraft((current) => ({ ...current, [field]: value }));
   }, []);
@@ -99,6 +103,7 @@ export function AppProvider({ children }) {
     addToCart,
     updateCartQuantity,
     removeCartItem,
+    clearCart,
     celebrationDraft,
     updateCelebrationDraft,
     orderDraft,
@@ -112,6 +117,7 @@ export function AppProvider({ children }) {
     cart,
     cartCount,
     celebrationDraft,
+    clearCart,
     locale,
     orderDraft,
     orderStatus,
@@ -132,4 +138,3 @@ export function useApp() {
   if (!context) throw new Error('useApp must be used inside AppProvider');
   return context;
 }
-

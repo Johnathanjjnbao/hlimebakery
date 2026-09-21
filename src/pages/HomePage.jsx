@@ -4,55 +4,111 @@ import DemoNote from '../components/DemoNote';
 import ProductCard from '../components/ProductCard';
 import SectionHeading from '../components/SectionHeading';
 import { useApp } from '../context/AppContext';
-import { categories } from '../data/categories';
-import { products } from '../data/products';
-import { homeContent, siteContent } from '../data/siteContent';
-import { textFor } from '../utils/i18n';
-
-const byIds = (ids) => ids.map((id) => products.find((product) => product.id === id)).filter(Boolean);
+import { useData } from '../context/DataContext';
+import { money, textFor } from '../utils/i18n';
 
 export default function HomePage() {
   const { locale } = useApp();
-  const bestSellers = byIds(['rose-croissant', 'strawberry-tart', 'chocolate-cake', 'petit-gift']);
-  const everyday = byIds(['milk-bread', 'rose-croissant', 'lemon-choux']);
+  const { categories, products, home: homeContent, homeSections, site: siteContent, source, error: dataError } = useData();
+  const fallbackEnabled = source === 'demo';
+  const section = (key, fallback = null) => homeSections[key] || (fallbackEnabled ? fallback : null);
+  const hero = section('hero', {
+    eyebrow: homeContent.hero.eyebrow,
+    title: homeContent.hero.title,
+    subtitle: homeContent.hero.lead,
+    body: homeContent.hero.stamp,
+    image: homeContent.hero.image,
+  });
+  const trustSections = [1, 2, 3].map((number, index) => section(`trust-${number}`, {
+    title: homeContent.trust[index].title,
+    body: homeContent.trust[index].text,
+  })).filter(Boolean);
+  const categorySection = section('category-intro', {
+    eyebrow: { vi: 'Khám phá theo nhu cầu', ko: '카테고리로 둘러보기' },
+    title: { vi: 'Hôm nay bạn muốn một chiếc bánh thế nào?', ko: '오늘은 어떤 디저트가 생각나나요?' },
+  });
+  const bestSellerSection = section('best-sellers', {
+    eyebrow: { vi: 'Được yêu thích', ko: '많이 찾는 메뉴' },
+    title: { vi: 'Best sellers của Hlime', ko: 'Hlime 베스트 셀러' },
+    subtitle: { vi: 'Những lựa chọn dễ bắt đầu khi bạn lần đầu ghé Hlime.', ko: 'Hlime을 처음 만나는 분께 권하는 편안한 선택입니다.' },
+  });
+  const frenchSection = section('french-signature', {
+    eyebrow: { vi: 'French Signature', ko: '프렌치 시그니처' },
+    title: { vi: 'Kỹ thuật Pháp, cảm giác thật gần.', ko: '프렌치 테크닉을 편안하게 즐기세요.' },
+    body: { vi: 'Những lớp bánh, kem và trái cây được cân chỉnh để tinh tế nhưng không xa cách — đúng tinh thần soft premium của Hlime.', ko: '섬세한 레이어와 크림, 과일의 균형을 살리되 어렵지 않게 즐길 수 있는 Hlime의 소프트 프리미엄입니다.' },
+    image: homeContent.editorialMedia.frenchSignature.image,
+  });
+  const everydaySection = section('everyday', {
+    eyebrow: { vi: 'Everyday Favorites', ko: 'Everyday Favorites' },
+    title: { vi: 'Những niềm vui nhỏ cho ngày thường.', ko: '평범한 하루를 위한 작은 기쁨.' },
+  });
+  const celebrationSection = section('celebration', {
+    eyebrow: { vi: 'Celebration', ko: '셀러브레이션' },
+    title: { vi: 'Cho một ngày đáng nhớ hơn một chút.', ko: '소중한 날을 조금 더 특별하게.' },
+    body: { vi: 'Chọn size, flavor, ngày cần bánh và lời nhắn.', ko: '사이즈, 맛, 필요한 날짜와 메시지를 선택하세요.' },
+    image: homeContent.editorialMedia.celebration.image,
+  });
+  const whyHeader = section('why-header', {
+    eyebrow: { vi: 'Why Hlime', ko: 'Why Hlime' },
+    title: { vi: 'Chỉn chu, nhưng vẫn thật dễ gần.', ko: '섬세하지만 언제나 편안하게.' },
+  });
+  const whySections = [1, 2, 3].map((number, index) => section(`why-${number}`, {
+    title: homeContent.why[index].title,
+    body: homeContent.why[index].text,
+    image: homeContent.why[index].image,
+  })).filter(Boolean);
+  const storySection = section('about-preview', {
+    eyebrow: { vi: 'Câu chuyện Hlime', ko: 'Hlime 이야기' },
+    title: { vi: 'Bắt đầu từ niềm tin rằng bánh ngon không cần tạo khoảng cách.', ko: '좋은 디저트는 어렵거나 멀게 느껴질 필요가 없다는 믿음에서 시작했습니다.' },
+    body: { vi: 'Chúng tôi theo đuổi những chiếc bánh đẹp, rõ vị và vừa vặn với nhịp sống hằng ngày.', ko: '아름답고 맛이 선명하며 일상의 리듬에 자연스럽게 어울리는 디저트를 지향합니다.' },
+    image: homeContent.editorialMedia.story.image,
+  });
+  const contactSection = section('contact-preview', {
+    eyebrow: { vi: 'Một chi nhánh', ko: '한 곳의 매장' },
+    title: { vi: 'Ghé Hlime hôm nay.', ko: '오늘 Hlime에 들러보세요.' },
+  });
+  const bestSellers = products.filter((product) => product.active && product.bestSeller).slice(0, 4);
+  const everyday = products.filter((product) => product.active && (product.category === 'everyday' || product.category === 'viennoiserie')).slice(0, 3);
+  const signatureProducts = products.filter((product) => product.active && product.category === 'patisserie').slice(0, 3);
+  const dataNote = dataError || (locale === 'ko' ? '예비 데모 콘텐츠를 사용 중입니다.' : 'Đang dùng nội dung demo dự phòng.');
 
   return (
     <main id="main-content">
-      <section className="hero">
+      {hero && <section className="hero">
         <div className="container hero-grid">
           <div className="hero-copy">
-            <span className="eyebrow">{textFor(homeContent.hero.eyebrow, locale)}</span>
-            <h1>{textFor(homeContent.hero.title, locale)}</h1>
-            <p className="lead">{textFor(homeContent.hero.lead, locale)}</p>
+            <span className="eyebrow">{textFor(hero.eyebrow, locale)}</span>
+            <h1>{textFor(hero.title, locale)}</h1>
+            <p className="lead">{textFor(hero.subtitle, locale)}</p>
             <div className="hero-actions">
               <AppLink className="button button--primary" to="/menu">{locale === 'ko' ? '메뉴 보기' : 'Xem menu'}</AppLink>
               <AppLink className="button button--secondary" to="/celebration">{locale === 'ko' ? '케이크 주문' : 'Đặt bánh'}</AppLink>
             </div>
-            <DemoNote>{locale === 'ko' ? '히어로 제목, 설명, 이미지는 데모이며 추후 Homepage Settings에서 관리됩니다.' : 'Hero title, subtitle và ảnh đang là demo; sau này quản lý qua Homepage Settings.'}</DemoNote>
+            {(dataError || source !== 'supabase') && <DemoNote>{dataNote}</DemoNote>}
           </div>
           <div className="hero-visual">
             <div className="hero-visual__frame">
-              <DemoImage src={homeContent.hero.image} alt={textFor(homeContent.hero.imageAlt, locale)} />
+              <DemoImage src={hero.image} alt={textFor(hero.title, locale)} />
             </div>
-            <div className="hero-stamp">{textFor(homeContent.hero.stamp, locale)}</div>
+            <div className="hero-stamp">{textFor(hero.body, locale)}</div>
           </div>
         </div>
-      </section>
+      </section>}
 
-      <div className="trust-line" aria-label="Hlime highlights">
-        {homeContent.trust.map((item) => (
-          <div className="trust-item" key={item.title.vi}>
+      {trustSections.length > 0 && <div className="trust-line" aria-label="Hlime highlights">
+        {trustSections.map((item) => (
+          <div className="trust-item" key={item.id || item.title.vi}>
             <strong>{textFor(item.title, locale)}</strong>
-            <span>{textFor(item.text, locale)}</span>
+            <span>{textFor(item.body, locale)}</span>
           </div>
         ))}
-      </div>
+      </div>}
 
-      <section className="section section--white">
+      {categorySection && <section className="section section--white">
         <div className="container">
           <SectionHeading
-            eyebrow={locale === 'ko' ? '카테고리로 둘러보기' : 'Khám phá theo nhu cầu'}
-            title={locale === 'ko' ? '오늘은 어떤 디저트가 생각나나요?' : 'Hôm nay bạn muốn một chiếc bánh thế nào?'}
+            eyebrow={textFor(categorySection.eyebrow, locale)}
+            title={textFor(categorySection.title, locale)}
           />
           <div className="category-grid">
             {categories.filter((category) => category.id !== 'all').map((category) => {
@@ -60,110 +116,108 @@ export default function HomePage() {
               return (
                 <AppLink className="category-card" to={to} key={category.id}>
                   <span className="category-card__image">
-                    <DemoImage src={category.image} alt={`${textFor(category.name, locale)} — demo image`} />
+                    <DemoImage src={category.image} alt={textFor(category.name, locale)} />
                   </span>
                   <strong>{textFor(category.name, locale)}</strong>
                 </AppLink>
               );
             })}
           </div>
-          <DemoNote>{locale === 'ko' ? '카테고리 이미지와 문구는 데모이며 추후 Categories에서 관리됩니다.' : 'Category image/text là demo; sau này được quản lý qua Categories.'}</DemoNote>
+            {(dataError || source !== 'supabase') && <DemoNote>{dataNote}</DemoNote>}
         </div>
-      </section>
+      </section>}
 
-      <section className="section home-products-section home-products-section--bestsellers">
+      {bestSellerSection && <section className="section home-products-section home-products-section--bestsellers">
         <div className="container">
           <SectionHeading
-            eyebrow={locale === 'ko' ? '많이 찾는 메뉴' : 'Được yêu thích'}
-            title={locale === 'ko' ? 'Hlime 베스트 셀러' : 'Best sellers của Hlime'}
-            text={locale === 'ko' ? 'Hlime을 처음 만나는 분께 권하는 편안한 선택입니다.' : 'Những lựa chọn dễ bắt đầu khi bạn lần đầu ghé Hlime.'}
+            eyebrow={textFor(bestSellerSection.eyebrow, locale)}
+            title={textFor(bestSellerSection.title, locale)}
+            text={textFor(bestSellerSection.subtitle, locale)}
             action={<AppLink className="button button--text" to="/menu">{locale === 'ko' ? '전체 보기' : 'Xem tất cả'}</AppLink>}
           />
           <div className="product-grid">{bestSellers.map((product) => <ProductCard key={product.id} product={product} />)}</div>
         </div>
-      </section>
+      </section>}
 
-      <section className="section section--white">
+      {frenchSection && <section className="section section--white">
         <div className="container editorial-grid">
-          <div className="editorial-image"><DemoImage src={homeContent.editorialMedia.frenchSignature.image} alt={textFor(homeContent.editorialMedia.frenchSignature.alt, locale)} /></div>
+          <div className="editorial-image"><DemoImage src={frenchSection.image} alt={textFor(frenchSection.title, locale)} /></div>
           <div className="editorial-copy">
-            <span className="eyebrow">{locale === 'ko' ? '프렌치 시그니처' : 'French Signature'}</span>
-            <h2>{locale === 'ko' ? '프렌치 테크닉을 편안하게 즐기세요.' : 'Kỹ thuật Pháp, cảm giác thật gần.'}</h2>
-            <p>{locale === 'ko' ? '섬세한 레이어와 크림, 과일의 균형을 살리되 어렵지 않게 즐길 수 있는 Hlime의 소프트 프리미엄입니다.' : 'Những lớp bánh, kem và trái cây được cân chỉnh để tinh tế nhưng không xa cách — đúng tinh thần soft premium của Hlime.'}</p>
+            <span className="eyebrow">{textFor(frenchSection.eyebrow, locale)}</span>
+            <h2>{textFor(frenchSection.title, locale)}</h2>
+            <p>{textFor(frenchSection.body, locale)}</p>
             <ul className="signature-list">
-              <li><span>Opera cà phê</span><span>108.000₫</span></li>
-              <li><span>Tarte dâu kem vani</span><span>92.000₫</span></li>
-              <li><span>Choux chanh vàng</span><span>72.000₫</span></li>
+              {signatureProducts.map((product) => <li key={product.id}><span>{textFor(product.name, locale)}</span><span>{money(product.price)}</span></li>)}
             </ul>
             <AppLink className="button button--primary" to="/menu?category=patisserie">{locale === 'ko' ? '파티세리 보기' : 'Khám phá Pâtisserie'}</AppLink>
           </div>
         </div>
-      </section>
+      </section>}
 
-      <section className="section home-products-section home-products-section--everyday">
+      {everydaySection && <section className="section home-products-section home-products-section--everyday">
         <div className="container">
-          <SectionHeading eyebrow="Everyday Favorites" title={locale === 'ko' ? '평범한 하루를 위한 작은 기쁨.' : 'Những niềm vui nhỏ cho ngày thường.'} />
+          <SectionHeading eyebrow={textFor(everydaySection.eyebrow, locale)} title={textFor(everydaySection.title, locale)} />
           <div className="product-grid">{everyday.map((product) => <ProductCard key={product.id} product={product} />)}</div>
         </div>
-      </section>
+      </section>}
 
-      <section className="section section--white">
+      {celebrationSection && <section className="section section--white">
         <div className="container feature-panel">
           <div className="feature-panel__copy">
-            <span className="eyebrow" style={{ color: '#f4dce3' }}>Celebration</span>
-            <h2>{locale === 'ko' ? '소중한 날을 조금 더 특별하게.' : 'Cho một ngày đáng nhớ hơn một chút.'}</h2>
-            <p>{locale === 'ko' ? '사이즈, 맛, 필요한 날짜와 메시지를 선택하세요. 프론트엔드 데모에서는 장바구니에만 담기며 실제 주문은 전송되지 않습니다.' : 'Chọn size, flavor, ngày cần bánh và lời nhắn. Frontend demo sẽ thêm lựa chọn vào Cart nhưng chưa gửi order thật.'}</p>
+            <span className="eyebrow" style={{ color: '#f4dce3' }}>{textFor(celebrationSection.eyebrow, locale)}</span>
+            <h2>{textFor(celebrationSection.title, locale)}</h2>
+            <p>{textFor(celebrationSection.body, locale)}</p>
             <AppLink className="button button--light" to="/celebration">{locale === 'ko' ? '셀러브레이션 케이크 보기' : 'Xem bánh Celebration'}</AppLink>
           </div>
-          <div className="feature-panel__image"><DemoImage src={homeContent.editorialMedia.celebration.image} alt={textFor(homeContent.editorialMedia.celebration.alt, locale)} /></div>
+          <div className="feature-panel__image"><DemoImage src={celebrationSection.image} alt={textFor(celebrationSection.title, locale)} /></div>
         </div>
-      </section>
+      </section>}
 
-      <section className="section">
+      {(whyHeader || whySections.length) && <section className="section">
         <div className="container">
-          <SectionHeading eyebrow="Why Hlime" title={locale === 'ko' ? '섬세하지만 언제나 편안하게.' : 'Chỉn chu, nhưng vẫn thật dễ gần.'} />
-          <div className="why-story-grid" data-demo-admin="homepage-why-media">
-            {homeContent.why.map((item) => (
-              <article className="why-story" key={item.number}>
-                <figure className="why-story__image"><DemoImage src={item.image} alt={textFor(item.alt, locale)} loading="lazy" /></figure>
+          {whyHeader && <SectionHeading eyebrow={textFor(whyHeader.eyebrow, locale)} title={textFor(whyHeader.title, locale)} />}
+          <div className="why-story-grid">
+            {whySections.map((item, index) => (
+              <article className="why-story" key={item.id || index}>
+                {item.image && <figure className="why-story__image"><DemoImage src={item.image} alt={textFor(item.title, locale)} loading="lazy" /></figure>}
                 <div className="why-story__caption">
-                  <span className="why-story__number">{item.number}</span>
-                  <div><h3>{textFor(item.title, locale)}</h3><p>{textFor(item.text, locale)}</p></div>
+                  <span className="why-story__number">{String(index + 1).padStart(2, '0')}</span>
+                  <div><h3>{textFor(item.title, locale)}</h3><p>{textFor(item.body, locale)}</p></div>
                 </div>
               </article>
             ))}
           </div>
         </div>
-      </section>
+      </section>}
 
-      <section className="section section--pink">
+      {storySection && <section className="section section--pink">
         <div className="container story-layout">
           <div className="story-copy">
-            <span className="eyebrow">{locale === 'ko' ? 'Hlime 이야기' : 'Câu chuyện Hlime'}</span>
-            <h2>{locale === 'ko' ? '좋은 디저트는 어렵거나 멀게 느껴질 필요가 없다는 믿음에서 시작했습니다.' : 'Bắt đầu từ niềm tin rằng bánh ngon không cần tạo khoảng cách.'}</h2>
-            <p>{locale === 'ko' ? '아름답고 맛이 선명하며 일상의 리듬에 자연스럽게 어울리는 디저트를 지향합니다.' : 'Chúng tôi theo đuổi những chiếc bánh đẹp, rõ vị và vừa vặn với nhịp sống hằng ngày.'}</p>
+            <span className="eyebrow">{textFor(storySection.eyebrow, locale)}</span>
+            <h2>{textFor(storySection.title, locale)}</h2>
+            <p>{textFor(storySection.body, locale)}</p>
             <AppLink className="button button--secondary" to="/about">{locale === 'ko' ? '브랜드 이야기' : 'Về Hlime'}</AppLink>
           </div>
-          <div className="story-image"><DemoImage src={homeContent.editorialMedia.story.image} alt={textFor(homeContent.editorialMedia.story.alt, locale)} /></div>
+          <div className="story-image"><DemoImage src={storySection.image} alt={textFor(storySection.title, locale)} /></div>
         </div>
-      </section>
+      </section>}
 
-      <section className="section">
+      {contactSection && <section className="section">
         <div className="container contact-band">
           <div className="contact-band__copy">
-            <span className="eyebrow">{locale === 'ko' ? '한 곳의 데모 매장' : 'Một chi nhánh · Demo'}</span>
-            <h2>{locale === 'ko' ? '오늘 Hlime에 들러보세요.' : 'Ghé Hlime hôm nay.'}</h2>
+            <span className="eyebrow">{textFor(contactSection.eyebrow, locale)}</span>
+            <h2>{textFor(contactSection.title, locale)}</h2>
             <div className="info-list">
               <div className="info-row"><strong>{locale === 'ko' ? '주소' : 'Địa chỉ'}</strong><span>{textFor(siteContent.addressShort, locale)}</span></div>
               <div className="info-row"><strong>{locale === 'ko' ? '영업시간' : 'Giờ mở cửa'}</strong><span>{textFor(siteContent.hours, locale)}</span></div>
               <div className="info-row"><strong>{locale === 'ko' ? '전화' : 'Điện thoại'}</strong><span>{siteContent.phone}</span></div>
             </div>
             <AppLink className="button button--primary" to="/contact">{locale === 'ko' ? '연락처 보기' : 'Thông tin liên hệ'}</AppLink>
-            <DemoNote>{locale === 'ko' ? '주소, 전화, 이메일, 영업시간, 소셜 및 지도 링크는 데모이며 추후 Site Settings에서 관리됩니다.' : 'Địa chỉ, SĐT, email, giờ mở cửa, social và map link là demo; sau này quản lý qua Site Settings.'}</DemoNote>
+            {(dataError || source !== 'supabase') && <DemoNote>{dataNote}</DemoNote>}
           </div>
-          <div className="contact-band__map" aria-label="Demo map placeholder"><div className="map-pin"><span>H</span></div></div>
+          <div className="contact-band__map" aria-label={locale === 'ko' ? 'Hlime 매장 위치' : 'Vị trí cửa hàng Hlime'}><div className="map-pin"><span>H</span></div></div>
         </div>
-      </section>
+      </section>}
     </main>
   );
 }
