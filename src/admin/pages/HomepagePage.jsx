@@ -9,13 +9,18 @@ import { useAdminLanguage } from '../i18n/AdminLanguageContext';
 
 const VI_FIELDS = ['eyebrow_vi', 'title_vi', 'subtitle_vi', 'body_vi'];
 const KO_FIELDS = ['eyebrow_ko', 'title_ko', 'subtitle_ko', 'body_ko'];
+const TRANSLATION_FIELDS = VI_FIELDS.map((field, index) => [field, KO_FIELDS[index]]);
 
 function HomepageSectionForm({ section, onSaved }) {
   const { t } = useAdminLanguage();
   const [draft, setDraft] = useState(section);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState(null);
-  const change = (field, value) => setDraft((current) => ({ ...current, [field]: value }));
+  const change = (field, value) => setDraft((current) => ({
+    ...current,
+    [field]: value,
+    ...(field.endsWith('_ko') ? { ko_translation_status: 'manual' } : {}),
+  }));
 
   const save = async (event) => {
     event.preventDefault();
@@ -52,7 +57,7 @@ function HomepageSectionForm({ section, onSaved }) {
         {VI_FIELDS.map((field) => <label className={`admin-field${field === 'body_vi' ? ' admin-field--wide' : ''}`} key={field}><span>{t(`content.${field.replace('_vi', '').replace('eyebrow', 'eyebrow').replace('title', 'title').replace('subtitle', 'subtitle').replace('body', 'body')}Vi`)}</span>{field === 'body_vi' || field === 'subtitle_vi' ? <textarea rows={field === 'body_vi' ? 4 : 2} value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} /> : <input value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} />}</label>)}
         <label className="admin-field"><span>{t('common.displayOrder')}</span><input type="number" min="0" value={draft.display_order} onChange={(event) => change('display_order', event.target.value)} /></label>
       </div>
-      <TranslationPanel status={draft.ko_translation_status}><div className="admin-form-grid">
+      <TranslationPanel status={draft.ko_translation_status} values={draft} fieldPairs={TRANSLATION_FIELDS} onApply={(updates) => setDraft((current) => ({ ...current, ...updates }))}><div className="admin-form-grid">
         {KO_FIELDS.map((field) => <label className={`admin-field${field === 'body_ko' ? ' admin-field--wide' : ''}`} key={field}><span>{t(`content.${field.replace('_ko', '')}Ko`)}</span>{field === 'body_ko' || field === 'subtitle_ko' ? <textarea rows={field === 'body_ko' ? 4 : 2} value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} /> : <input value={draft[field] || ''} onChange={(event) => change(field, event.target.value)} />}</label>)}
       </div></TranslationPanel>
       <ImageUploadField label={t('homepage.image')} path={draft.image_path} folder="site/home" onUploaded={saveImagePath} />

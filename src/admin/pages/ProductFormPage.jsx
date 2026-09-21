@@ -14,6 +14,11 @@ const emptyProduct = {
   description_vi: '', description_ko: '', price_amount: 0, image_path: '', active: false, available: true,
   featured: false, best_seller: false, display_order: 0, ko_translation_status: 'missing',
 };
+const PRODUCT_TRANSLATION_FIELDS = [
+  ['name_vi', 'name_ko'],
+  ['short_description_vi', 'short_description_ko'],
+  ['description_vi', 'description_ko'],
+];
 
 const MAX_BIGINT_ID = 9223372036854775807n;
 
@@ -85,7 +90,11 @@ export default function ProductFormPage({ mode }) {
 
   useEffect(() => { load(); }, [load]);
 
-  const change = (field, value) => setDraft((current) => ({ ...current, [field]: value }));
+  const change = (field, value) => setDraft((current) => ({
+    ...current,
+    [field]: value,
+    ...(field.endsWith('_ko') ? { ko_translation_status: 'manual' } : {}),
+  }));
 
   const save = async (event) => {
     event.preventDefault();
@@ -154,7 +163,7 @@ export default function ProductFormPage({ mode }) {
               <label className="admin-field"><span>{t('common.displayOrder')}</span><input type="number" min="0" value={draft.display_order} onChange={(event) => change('display_order', event.target.value)} /></label>
             </div></div>
 
-            <TranslationPanel status={draft.ko_translation_status}>
+            <TranslationPanel status={draft.ko_translation_status} values={draft} fieldPairs={PRODUCT_TRANSLATION_FIELDS} onApply={(updates) => setDraft((current) => ({ ...current, ...updates }))}>
               <div className="admin-form-grid">
                 <label className="admin-field"><span>{t('products.nameKo')}</span><input value={draft.name_ko || ''} onChange={(event) => change('name_ko', event.target.value)} /></label>
                 <label className="admin-field admin-field--wide"><span>{t('products.shortDescriptionKo')}</span><textarea rows="2" value={draft.short_description_ko || ''} onChange={(event) => change('short_description_ko', event.target.value)} /></label>

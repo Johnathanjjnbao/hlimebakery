@@ -10,6 +10,11 @@ const emptySettings = {
   id: 1, tagline_vi: '', tagline_ko: '', phone: '', email: '', address_vi: '', address_ko: '', opening_hours_vi: '', opening_hours_ko: '',
   social_links: {}, map_url: '', preferred_contact_channel: '', ko_translation_status: 'missing',
 };
+const SITE_TRANSLATION_FIELDS = [
+  ['tagline_vi', 'tagline_ko'],
+  ['address_vi', 'address_ko'],
+  ['opening_hours_vi', 'opening_hours_ko'],
+];
 
 export default function SiteSettingsPage() {
   const { t } = useAdminLanguage();
@@ -34,7 +39,11 @@ export default function SiteSettingsPage() {
     setLoading(false);
   }, []);
   useEffect(() => { load(); }, [load]);
-  const change = (field, value) => setDraft((current) => ({ ...current, [field]: value }));
+  const change = (field, value) => setDraft((current) => ({
+    ...current,
+    [field]: value,
+    ...(field.endsWith('_ko') ? { ko_translation_status: 'manual' } : {}),
+  }));
 
   const save = async (event) => {
     event.preventDefault();
@@ -82,7 +91,7 @@ export default function SiteSettingsPage() {
         <label className="admin-field"><span>{t('siteSettings.preferredContact')}</span><input value={draft.preferred_contact_channel || ''} onChange={(event) => change('preferred_contact_channel', event.target.value)} /></label>
         <label className="admin-field admin-field--wide"><span>{t('siteSettings.socialLinks')}</span><textarea rows="5" value={socialJson} onChange={(event) => setSocialJson(event.target.value)} spellCheck="false" /></label>
       </div>
-      <TranslationPanel status={draft.ko_translation_status}><div className="admin-form-grid">
+      <TranslationPanel status={draft.ko_translation_status} values={draft} fieldPairs={SITE_TRANSLATION_FIELDS} onApply={(updates) => setDraft((current) => ({ ...current, ...updates }))}><div className="admin-form-grid">
         <label className="admin-field admin-field--wide"><span>{t('siteSettings.taglineKo')}</span><input value={draft.tagline_ko || ''} onChange={(event) => change('tagline_ko', event.target.value)} /></label>
         <label className="admin-field admin-field--wide"><span>{t('siteSettings.addressKo')}</span><textarea rows="3" value={draft.address_ko || ''} onChange={(event) => change('address_ko', event.target.value)} /></label>
         <label className="admin-field admin-field--wide"><span>{t('siteSettings.hoursKo')}</span><input value={draft.opening_hours_ko || ''} onChange={(event) => change('opening_hours_ko', event.target.value)} /></label>

@@ -3,9 +3,11 @@ import { requireSupabase } from '../../lib/supabase';
 import { translationMetaForSave } from '../../lib/translation';
 import ImageUploadField from './ImageUploadField';
 import { AdminEmpty, SaveNotice } from './AdminState';
+import TranslationPanel from './TranslationPanel';
 import { useAdminLanguage } from '../i18n/AdminLanguageContext';
 
 const emptyOption = { option_key: '', label_vi: '', label_ko: '', image_path: '', active: true, display_order: 0, ko_translation_status: 'missing' };
+const OPTION_TRANSLATION_FIELDS = [['label_vi', 'label_ko']];
 
 export default function ProductOptionsEditor({ productId, kind, initialOptions, onRefresh }) {
   const table = kind === 'size' ? 'product_size_options' : 'product_flavor_options';
@@ -20,7 +22,11 @@ export default function ProductOptionsEditor({ productId, kind, initialOptions, 
     setDraft(editing ? { ...editing } : emptyOption);
   }, [editing]);
 
-  const change = (field, value) => setDraft((current) => ({ ...current, [field]: value }));
+  const change = (field, value) => setDraft((current) => ({
+    ...current,
+    [field]: value,
+    ...(field.endsWith('_ko') ? { ko_translation_status: 'manual' } : {}),
+  }));
 
   const save = async (event) => {
     event.preventDefault();
@@ -90,9 +96,11 @@ export default function ProductOptionsEditor({ productId, kind, initialOptions, 
           <label className="admin-field"><span>option_key</span><input value={draft.option_key} onChange={(event) => change('option_key', event.target.value)} required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" /></label>
           <label className="admin-field"><span>{t('common.displayOrder')}</span><input type="number" min="0" value={draft.display_order} onChange={(event) => change('display_order', event.target.value)} /></label>
           <label className="admin-field"><span>{t('options.labelVi')}</span><input value={draft.label_vi} onChange={(event) => change('label_vi', event.target.value)} required /></label>
-          <label className="admin-field"><span>{t('options.labelKo')}</span><input value={draft.label_ko || ''} onChange={(event) => change('label_ko', event.target.value)} /></label>
           <label className="admin-check"><input type="checkbox" checked={draft.active} onChange={(event) => change('active', event.target.checked)} /><span>{t('common.active')}</span></label>
         </div>
+        <TranslationPanel status={draft.ko_translation_status} values={draft} fieldPairs={OPTION_TRANSLATION_FIELDS} onApply={(updates) => setDraft((current) => ({ ...current, ...updates }))}>
+          <div className="admin-form-grid"><label className="admin-field"><span>{t('options.labelKo')}</span><input value={draft.label_ko || ''} onChange={(event) => change('label_ko', event.target.value)} /></label></div>
+        </TranslationPanel>
         {kind === 'flavor' && (
           <ImageUploadField label={t('options.flavorImage')} path={draft.image_path} folder={`products/${productId}/flavors`} disabled={!editing} onUploaded={saveImagePath} />
         )}

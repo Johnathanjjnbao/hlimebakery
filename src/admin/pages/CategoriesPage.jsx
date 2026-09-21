@@ -9,6 +9,7 @@ import TranslationPanel from '../components/TranslationPanel';
 import { useAdminLanguage } from '../i18n/AdminLanguageContext';
 
 const emptyCategory = { slug: '', name_vi: '', name_ko: '', short_description_vi: '', short_description_ko: '', image_path: '', active: true, display_order: 0, ko_translation_status: 'missing' };
+const CATEGORY_TRANSLATION_FIELDS = [['name_vi', 'name_ko'], ['short_description_vi', 'short_description_ko']];
 
 export default function CategoriesPage() {
   const { t } = useAdminLanguage();
@@ -31,7 +32,11 @@ export default function CategoriesPage() {
   useEffect(() => { load(); }, [load]);
   useEffect(() => { setDraft(editing ? { ...editing } : emptyCategory); setStatus(null); }, [editing]);
 
-  const change = (field, value) => setDraft((current) => ({ ...current, [field]: value }));
+  const change = (field, value) => setDraft((current) => ({
+    ...current,
+    [field]: value,
+    ...(field.endsWith('_ko') ? { ko_translation_status: 'manual' } : {}),
+  }));
 
   const save = async (event) => {
     event.preventDefault();
@@ -108,7 +113,7 @@ export default function CategoriesPage() {
             <label className="admin-field admin-field--wide"><span>{t('categories.nameVi')} *</span><input value={draft.name_vi} onChange={(event) => change('name_vi', event.target.value)} required /></label>
             <label className="admin-field admin-field--wide"><span>{t('categories.shortDescriptionVi')}</span><textarea rows="3" value={draft.short_description_vi || ''} onChange={(event) => change('short_description_vi', event.target.value)} /></label>
           </div>
-          <TranslationPanel status={draft.ko_translation_status}><div className="admin-form-grid">
+          <TranslationPanel status={draft.ko_translation_status} values={draft} fieldPairs={CATEGORY_TRANSLATION_FIELDS} onApply={(updates) => setDraft((current) => ({ ...current, ...updates }))}><div className="admin-form-grid">
             <label className="admin-field admin-field--wide"><span>{t('categories.nameKo')}</span><input value={draft.name_ko || ''} onChange={(event) => change('name_ko', event.target.value)} /></label>
             <label className="admin-field admin-field--wide"><span>{t('categories.shortDescriptionKo')}</span><textarea rows="3" value={draft.short_description_ko || ''} onChange={(event) => change('short_description_ko', event.target.value)} /></label>
           </div></TranslationPanel>

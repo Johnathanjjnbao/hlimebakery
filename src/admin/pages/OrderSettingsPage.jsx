@@ -9,6 +9,7 @@ import { useAdminLanguage } from '../i18n/AdminLanguageContext';
 const KEYS = ['pickup_help', 'delivery_help', 'submit_help', 'pending_help', 'confirmed_help'];
 const labelKeys = { pickup_help: 'orderSettings.pickupHelp', delivery_help: 'orderSettings.deliveryHelp', submit_help: 'orderSettings.submitHelp', pending_help: 'orderSettings.pendingHelp', confirmed_help: 'orderSettings.confirmedHelp' };
 const emptySettings = Object.assign({ id: 1, ko_translation_status: 'missing' }, ...KEYS.flatMap((key) => [{ [`${key}_vi`]: '' }, { [`${key}_ko`]: '' }]));
+const TRANSLATION_FIELDS = KEYS.map((key) => [`${key}_vi`, `${key}_ko`]);
 
 export default function OrderSettingsPage() {
   const { t } = useAdminLanguage();
@@ -27,7 +28,11 @@ export default function OrderSettingsPage() {
     setLoading(false);
   }, []);
   useEffect(() => { load(); }, [load]);
-  const change = (field, value) => setDraft((current) => ({ ...current, [field]: value }));
+  const change = (field, value) => setDraft((current) => ({
+    ...current,
+    [field]: value,
+    ...(field.endsWith('_ko') ? { ko_translation_status: 'manual' } : {}),
+  }));
 
   const save = async (event) => {
     event.preventDefault();
@@ -46,7 +51,7 @@ export default function OrderSettingsPage() {
   return <AdminPage title={t('orderSettings.title')} description={t('orderSettings.description')}>
     {loading ? <AdminLoading /> : error ? <AdminError error={error} retry={load} /> : <form className="admin-card admin-form" onSubmit={save}>
       <div className="admin-form-grid">{KEYS.map((key) => <label className="admin-field admin-field--wide" key={key}><span>{t(labelKeys[key])} · {t('languageName.vi')}</span><textarea rows="3" value={draft[`${key}_vi`] || ''} onChange={(event) => change(`${key}_vi`, event.target.value)} /></label>)}</div>
-      <TranslationPanel status={draft.ko_translation_status}><div className="admin-form-grid">{KEYS.map((key) => <label className="admin-field admin-field--wide" key={key}><span>{t(labelKeys[key])} · {t('languageName.ko')}</span><textarea rows="3" value={draft[`${key}_ko`] || ''} onChange={(event) => change(`${key}_ko`, event.target.value)} /></label>)}</div></TranslationPanel>
+      <TranslationPanel status={draft.ko_translation_status} values={draft} fieldPairs={TRANSLATION_FIELDS} onApply={(updates) => setDraft((current) => ({ ...current, ...updates }))}><div className="admin-form-grid">{KEYS.map((key) => <label className="admin-field admin-field--wide" key={key}><span>{t(labelKeys[key])} · {t('languageName.ko')}</span><textarea rows="3" value={draft[`${key}_ko`] || ''} onChange={(event) => change(`${key}_ko`, event.target.value)} /></label>)}</div></TranslationPanel>
       <SaveNotice status={status} />
       <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? t('common.saving') : t('orderSettings.save')}</button>
     </form>}
