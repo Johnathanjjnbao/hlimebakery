@@ -98,7 +98,7 @@ export default function ContactPage() {
               {preferredHref && <a className="button button--primary button--full" href={preferredHref}>{preferredLabel}</a>}
               {siteContent.phoneHref && siteContent.preferredContactChannel === 'email' && <a className="button button--secondary button--full" href={siteContent.phoneHref}>{locale === 'ko' ? '전화하기' : 'Gọi điện'}</a>}
               {siteContent.email && siteContent.preferredContactChannel !== 'email' && <a className="button button--secondary button--full" href={`mailto:${siteContent.email}`}>{locale === 'ko' ? '이메일 보내기' : 'Gửi email'}</a>}
-              {instagram && <a className="text-link" href={instagram.href} target="_blank" rel="noopener noreferrer">{instagram.handle}</a>}
+              {instagram && <a className="text-link" href={instagram.href} target="_blank" rel="noopener noreferrer">{locale === 'ko' ? '또는 인스타그램으로 문의하기' : 'Hoặc liên hệ qua IG chúng tôi'}</a>}
               {Object.entries(siteContent.socialLinks || {}).map(([name, url]) => name.toLowerCase() !== 'instagram' && url && <a className="text-link" href={url} target="_blank" rel="noopener noreferrer" key={name}>{name}</a>)}
             </div>
           </section>}
