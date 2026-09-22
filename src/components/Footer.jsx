@@ -1,11 +1,13 @@
 import { useApp } from '../context/AppContext';
 import { useData } from '../context/DataContext';
 import { textFor } from '../utils/i18n';
+import { instagramProfile } from '../utils/socialLinks';
 import AppLink from './AppLink';
 
 export default function Footer() {
   const { locale } = useApp();
   const { site: siteContent, source } = useData();
+  const instagram = instagramProfile(siteContent.socialLinks?.instagram);
   return (
     <footer className="site-footer">
       <div className="container">
@@ -32,7 +34,7 @@ export default function Footer() {
             <div className="footer-links">
               <AppLink to="/contact">{locale === 'ko' ? '문의' : 'Liên hệ'}</AppLink>
               <AppLink to="/cart">{locale === 'ko' ? '장바구니' : 'Giỏ hàng'}</AppLink>
-              {siteContent.socialLinks?.instagram && <a href={siteContent.socialLinks.instagram} target="_blank" rel="noreferrer">{locale === 'ko' ? '인스타그램' : 'Instagram'}</a>}
+              {instagram && <a href={instagram.href} target="_blank" rel="noopener noreferrer">{locale === 'ko' ? '인스타그램' : 'Instagram'}</a>}
             </div>
           </div>
           <div>

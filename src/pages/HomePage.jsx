@@ -71,7 +71,9 @@ export default function HomePage() {
   const bestSellers = products.filter((product) => product.active && product.bestSeller).slice(0, 4);
   const everyday = products.filter((product) => product.active && (product.category === 'everyday' || product.category === 'viennoiserie')).slice(0, 3);
   const signatureProducts = products.filter((product) => product.active && product.category === 'patisserie').slice(0, 3);
-  const dataNote = dataError || (locale === 'ko' ? '예비 데모 콘텐츠를 사용 중입니다.' : 'Đang dùng nội dung demo dự phòng.');
+  const dataNote = dataError
+    ? (locale === 'ko' ? '연결할 수 없습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.' : 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.')
+    : (locale === 'ko' ? '예비 데모 콘텐츠를 사용 중입니다.' : 'Đang dùng nội dung demo dự phòng.');
 
   return (
     <main id="main-content">

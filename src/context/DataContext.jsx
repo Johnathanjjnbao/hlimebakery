@@ -160,7 +160,7 @@ const fallbackState = {
 export function DataProvider({ children }) {
   const [data, setData] = useState(fallbackState);
   const [loading, setLoading] = useState(isSupabaseConfigured);
-  const [error, setError] = useState(isSupabaseConfigured ? '' : 'Supabase chưa được cấu hình; đang dùng dữ liệu demo dự phòng.');
+  const [error, setError] = useState(false);
   const [source, setSource] = useState('demo');
 
   const refresh = useCallback(async () => {
@@ -181,7 +181,8 @@ export function DataProvider({ children }) {
     ]);
     const failure = [categoryResult, productResult, sizeResult, flavorResult, homeResult, pageResult, siteResult, orderResult].find((result) => result.error);
     if (failure) {
-      setError(`Không thể tải dữ liệu Supabase; đang dùng dữ liệu dự phòng. ${failure.error.message}`);
+      console.error('Unable to load public data from Supabase.', failure.error);
+      setError(true);
       setData(fallbackState);
       setSource('demo');
       setLoading(false);
@@ -204,7 +205,7 @@ export function DataProvider({ children }) {
       sizeOptions: mappedSizes,
       flavorOptions: mappedFlavors,
     });
-    setError('');
+    setError(false);
     setSource('supabase');
     setLoading(false);
   }, []);

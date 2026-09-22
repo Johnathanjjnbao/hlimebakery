@@ -1940,6 +1940,16 @@ body[data-page='about'] .value-card:nth-child(2) {
   background: var(--surface-elevated);
 }
 
+.field [aria-invalid='true'] {
+  border-color: #a63f4d;
+}
+
+.field-error {
+  color: #8e3542;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
 .radio-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1974,6 +1984,10 @@ body[data-page='about'] .value-card:nth-child(2) {
   grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.65fr);
   align-items: start;
   gap: 2rem;
+}
+
+.cart-layout--empty {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .cart-main {

@@ -15,6 +15,9 @@ export default function ProductPage() {
   const { getProduct, products, source, error: dataError } = useData();
   const [quantity, setQuantity] = useState(1);
   const product = getProduct(id);
+  const dataNote = dataError
+    ? (locale === 'ko' ? '연결할 수 없습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.' : 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.')
+    : (locale === 'ko' ? '예비 데모 상품입니다.' : 'Sản phẩm demo dự phòng.');
 
   if (!product) {
     return (
@@ -51,7 +54,7 @@ export default function ProductPage() {
               <h1>{textFor(product.name, locale)}</h1>
               <span className="price">{money(product.price)}</span>
               <p className="description">{textFor(product.description, locale)}</p>
-              {(dataError || source !== 'supabase') && <DemoNote>{dataError || (locale === 'ko' ? '예비 데모 상품입니다.' : 'Sản phẩm demo dự phòng.')}</DemoNote>}
+              {(dataError || source !== 'supabase') && <DemoNote>{dataNote}</DemoNote>}
               <div className="product-points">
                 <div className="product-point">{locale === 'ko' ? '매일 소량으로 정성껏 준비합니다.' : 'Làm mới mỗi ngày với số lượng vừa phải.'}</div>
                 <div className="product-point">{locale === 'ko' ? '온라인 결제 없이 주문 요청을 보냅니다.' : 'Gửi yêu cầu đặt bánh, không thanh toán online.'}</div>

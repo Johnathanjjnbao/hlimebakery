@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { useData } from '../context/DataContext';
 import { contactContent } from '../data/siteContent';
 import { textFor } from '../utils/i18n';
+import { instagramProfile } from '../utils/socialLinks';
 
 const demoSections = {
   hero: { eyebrow: contactContent.hero.eyebrow, title: contactContent.hero.title, body: contactContent.hero.text },
@@ -21,25 +22,6 @@ const demoSections = {
     },
   },
 };
-
-function instagramProfile(value) {
-  const rawValue = String(value || '').trim();
-  if (!rawValue) return null;
-
-  if (/^https?:\/\//i.test(rawValue)) {
-    try {
-      const url = new URL(rawValue);
-      if (!/(^|\.)instagram\.com$/i.test(url.hostname)) return null;
-      const handle = url.pathname.split('/').filter(Boolean)[0]?.replace(/^@/, '');
-      return handle ? { handle, href: rawValue } : null;
-    } catch {
-      return null;
-    }
-  }
-
-  const handle = rawValue.replace(/^[@#]/, '').split(/[/?#]/)[0];
-  return handle ? { handle, href: `https://instagram.com/${handle}` } : null;
-}
 
 export default function ContactPage() {
   const { locale } = useApp();
