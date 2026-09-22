@@ -22,6 +22,25 @@ const demoSections = {
   },
 };
 
+function instagramProfile(value) {
+  const rawValue = String(value || '').trim();
+  if (!rawValue) return null;
+
+  if (/^https?:\/\//i.test(rawValue)) {
+    try {
+      const url = new URL(rawValue);
+      if (!/(^|\.)instagram\.com$/i.test(url.hostname)) return null;
+      const handle = url.pathname.split('/').filter(Boolean)[0]?.replace(/^@/, '');
+      return handle ? { handle, href: rawValue } : null;
+    } catch {
+      return null;
+    }
+  }
+
+  const handle = rawValue.replace(/^[@#]/, '').split(/[/?#]/)[0];
+  return handle ? { handle, href: `https://instagram.com/${handle}` } : null;
+}
+
 export default function ContactPage() {
   const { locale } = useApp();
   const { site: siteContent, pageContent, source } = useData();
@@ -30,6 +49,7 @@ export default function ContactPage() {
   const hero = section('hero');
   const atmosphere = section('atmosphere');
   const support = section('support');
+  const instagram = instagramProfile(siteContent.socialLinks?.instagram);
   const preferredHref = siteContent.preferredContactChannel === 'email' ? `mailto:${siteContent.email}` : siteContent.phoneHref;
   const preferredLabel = siteContent.preferredContactChannel === 'email'
     ? (locale === 'ko' ? '이메일 보내기' : 'Gửi email')
@@ -78,7 +98,8 @@ export default function ContactPage() {
               {preferredHref && <a className="button button--primary button--full" href={preferredHref}>{preferredLabel}</a>}
               {siteContent.phoneHref && siteContent.preferredContactChannel === 'email' && <a className="button button--secondary button--full" href={siteContent.phoneHref}>{locale === 'ko' ? '전화하기' : 'Gọi điện'}</a>}
               {siteContent.email && siteContent.preferredContactChannel !== 'email' && <a className="button button--secondary button--full" href={`mailto:${siteContent.email}`}>{locale === 'ko' ? '이메일 보내기' : 'Gửi email'}</a>}
-              {Object.entries(siteContent.socialLinks || {}).map(([name, url]) => url && <a className="text-link" href={url} target="_blank" rel="noreferrer" key={name}>{name}</a>)}
+              {instagram && <a className="text-link" href={instagram.href} target="_blank" rel="noopener noreferrer">{instagram.handle}</a>}
+              {Object.entries(siteContent.socialLinks || {}).map(([name, url]) => name.toLowerCase() !== 'instagram' && url && <a className="text-link" href={url} target="_blank" rel="noopener noreferrer" key={name}>{name}</a>)}
             </div>
           </section>}
         </div>

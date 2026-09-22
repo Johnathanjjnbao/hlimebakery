@@ -1657,13 +1657,6 @@ body[data-page='about'] .value-card:nth-child(2) {
   font-size: 1.15rem;
 }
 
-.contact-atmosphere + .contact-card {
-  position: relative;
-  z-index: 2;
-  width: calc(100% - 2rem);
-  margin: -3rem 0 0 auto;
-}
-
 .contact-card h2 {
   font-size: clamp(1.55rem, 3vw, 2.25rem);
 }
@@ -2706,11 +2699,6 @@ body[data-page='about'] .value-card:nth-child(2) {
   .contact-atmosphere {
     min-height: 260px;
     border-radius: var(--radius-md) var(--radius-md) 70px var(--radius-md);
-  }
-
-  .contact-atmosphere + .contact-card {
-    width: calc(100% - 1rem);
-    margin-top: -2rem;
   }
 
   .celebration-detail {
