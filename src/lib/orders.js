@@ -52,6 +52,7 @@ export function buildOrderPayload({ locale, orderDraft, items }) {
     requested_fulfillment_date: orderDraft.order_date,
     requested_fulfillment_time: orderDraft.order_time,
     order_note: orderDraft.order_note || null,
+    payment_method: orderDraft.payment_method,
     items: items.map(({ item, product }) => ({
       product_slug: product.id,
       quantity: item.quantity,

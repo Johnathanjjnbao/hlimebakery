@@ -12,12 +12,12 @@ import { money, textFor } from '../utils/i18n';
 export default function ProductPage() {
   const { id } = useParams();
   const { locale, addToCart } = useApp();
-  const { getProduct, products, source, error: dataError } = useData();
+  const { getProduct, products, error: dataError } = useData();
   const [quantity, setQuantity] = useState(1);
   const product = getProduct(id);
-  const dataNote = dataError
-    ? (locale === 'ko' ? '연결할 수 없습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.' : 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.')
-    : (locale === 'ko' ? '예비 데모 상품입니다.' : 'Sản phẩm demo dự phòng.');
+  const dataNote = locale === 'ko'
+    ? '연결할 수 없습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.'
+    : 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.';
 
   if (!product) {
     return (
@@ -50,14 +50,14 @@ export default function ProductPage() {
           <div className="product-detail" data-product-id={product.id}>
             <div className="product-detail__image"><DemoImage src={product.image} alt={textFor(product.name, locale)} /></div>
             <div className="product-detail__copy">
-              <span className="eyebrow">{textFor(product.categoryName, locale)} · {source === 'supabase' ? 'HLIME' : 'DEMO'}</span>
+              <span className="eyebrow">{textFor(product.categoryName, locale)} · HLIME</span>
               <h1>{textFor(product.name, locale)}</h1>
               <span className="price">{money(product.price)}</span>
               <p className="description">{textFor(product.description, locale)}</p>
-              {(dataError || source !== 'supabase') && <DemoNote>{dataNote}</DemoNote>}
+              {dataError && <DemoNote>{dataNote}</DemoNote>}
               <div className="product-points">
                 <div className="product-point">{locale === 'ko' ? '매일 소량으로 정성껏 준비합니다.' : 'Làm mới mỗi ngày với số lượng vừa phải.'}</div>
-                <div className="product-point">{locale === 'ko' ? '온라인 결제 없이 주문 요청을 보냅니다.' : 'Gửi yêu cầu đặt bánh, không thanh toán online.'}</div>
+                <div className="product-point">{locale === 'ko' ? '계좌이체 또는 수령 시 결제를 선택할 수 있습니다.' : 'Chọn chuyển khoản hoặc thanh toán khi nhận hàng.'}</div>
               </div>
               <div className="quantity-row">
                 <span className="fieldset-label">{locale === 'ko' ? '수량' : 'Số lượng'}</span>

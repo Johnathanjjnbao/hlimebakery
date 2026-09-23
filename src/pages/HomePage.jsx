@@ -71,9 +71,9 @@ export default function HomePage() {
   const bestSellers = products.filter((product) => product.active && product.bestSeller).slice(0, 4);
   const everyday = products.filter((product) => product.active && (product.category === 'everyday' || product.category === 'viennoiserie')).slice(0, 3);
   const signatureProducts = products.filter((product) => product.active && product.category === 'patisserie').slice(0, 3);
-  const dataNote = dataError
-    ? (locale === 'ko' ? '연결할 수 없습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.' : 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.')
-    : (locale === 'ko' ? '예비 데모 콘텐츠를 사용 중입니다.' : 'Đang dùng nội dung demo dự phòng.');
+  const dataNote = locale === 'ko'
+    ? '연결할 수 없습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.'
+    : 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.';
 
   return (
     <main id="main-content">
@@ -87,7 +87,7 @@ export default function HomePage() {
               <AppLink className="button button--primary" to="/menu">{locale === 'ko' ? '메뉴 보기' : 'Xem menu'}</AppLink>
               <AppLink className="button button--secondary" to="/celebration">{locale === 'ko' ? '케이크 주문' : 'Đặt bánh'}</AppLink>
             </div>
-            {(dataError || source !== 'supabase') && <DemoNote>{dataNote}</DemoNote>}
+            {dataError && <DemoNote>{dataNote}</DemoNote>}
           </div>
           <div className="hero-visual">
             <div className="hero-visual__frame">
@@ -126,7 +126,7 @@ export default function HomePage() {
               );
             })}
           </div>
-            {(dataError || source !== 'supabase') && <DemoNote>{dataNote}</DemoNote>}
+            {dataError && <DemoNote>{dataNote}</DemoNote>}
         </div>
       </section>}
 
@@ -216,7 +216,7 @@ export default function HomePage() {
               <div className="info-row"><strong>{locale === 'ko' ? '전화' : 'Điện thoại'}</strong><span>{siteContent.phone}</span></div>
             </div>
             <AppLink className="button button--primary" to="/contact">{locale === 'ko' ? '연락처 보기' : 'Thông tin liên hệ'}</AppLink>
-            {(dataError || source !== 'supabase') && <DemoNote>{dataNote}</DemoNote>}
+            {dataError && <DemoNote>{dataNote}</DemoNote>}
           </div>
           <LocationMap className="contact-band__map" address={siteContent.address} mapUrl={siteContent.mapUrl} locale={locale} />
         </div>

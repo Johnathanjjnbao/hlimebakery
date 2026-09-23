@@ -8,14 +8,14 @@ import { textFor } from '../utils/i18n';
 
 export default function MenuPage() {
   const { locale } = useApp();
-  const { categories, products, error: dataError, source } = useData();
+  const { categories, products, error: dataError } = useData();
   const [searchParams, setSearchParams] = useSearchParams();
   const requested = searchParams.get('category') || 'all';
   const active = categories.some((category) => category.id === requested) ? requested : 'all';
   const visible = active === 'all' ? products.filter((product) => product.active) : products.filter((product) => product.active && product.category === active);
-  const dataNote = dataError
-    ? (locale === 'ko' ? '연결할 수 없습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.' : 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.')
-    : (locale === 'ko' ? '예비 데모 데이터를 사용 중입니다.' : 'Đang dùng dữ liệu demo dự phòng.');
+  const dataNote = locale === 'ko'
+    ? '연결할 수 없습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.'
+    : 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.';
 
   const setFilter = (category) => {
     if (category === 'all') setSearchParams({});
@@ -36,7 +36,7 @@ export default function MenuPage() {
         <div className="container">
           <div className="section-heading">
             <div><span className="small muted">{locale === 'ko' ? `${visible.length}개 상품` : `${visible.length} sản phẩm`}</span></div>
-            {(dataError || source !== 'supabase') && <DemoNote style={{ margin: 0 }}>{dataNote}</DemoNote>}
+            {dataError && <DemoNote style={{ margin: 0 }}>{dataNote}</DemoNote>}
           </div>
           <div className="filter-bar" aria-label={locale === 'ko' ? '상품 카테고리' : 'Danh mục sản phẩm'}>
             {categories.map((category) => (

@@ -40,7 +40,7 @@ export default function Header() {
       <div className="demo-strip">
         {source === 'supabase'
           ? `Hlime · ${textFor(siteContent.tagline, locale)}`
-          : (locale === 'ko' ? 'REACT 프론트엔드 · 예비 데모 데이터' : 'React Frontend · Dữ liệu demo dự phòng')}
+          : (locale === 'ko' ? 'Hlime · 정보를 업데이트하고 있습니다' : 'Hlime · Thông tin đang được cập nhật')}
       </div>
       <header className="site-header">
         <div className="container header-inner">

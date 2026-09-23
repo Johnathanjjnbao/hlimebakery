@@ -6,7 +6,7 @@ import AppLink from './AppLink';
 
 export default function Footer() {
   const { locale } = useApp();
-  const { site: siteContent, source } = useData();
+  const { site: siteContent } = useData();
   const instagram = instagramProfile(siteContent.socialLinks?.instagram);
   return (
     <footer className="site-footer">
@@ -18,7 +18,7 @@ export default function Footer() {
               <span className="brand__sub">{siteContent.brandSub}</span>
             </AppLink>
             <p className="small" style={{ maxWidth: 310, marginTop: '1.2rem' }}>
-              {textFor(siteContent.tagline, locale)} {source === 'supabase' ? '' : (locale === 'ko' ? '예비 데모 연락처입니다.' : 'Đang dùng thông tin demo dự phòng.')}
+              {textFor(siteContent.tagline, locale)}
             </p>
           </div>
           <div>
@@ -47,8 +47,8 @@ export default function Footer() {
           </div>
         </div>
         <div className="footer-bottom">
-          <span>© 2026 Hlime Frontend</span>
-          <span>{source === 'supabase' ? 'VI · KO' : (locale === 'ko' ? '예비 데모 데이터' : 'Dữ liệu demo dự phòng')}</span>
+          <span>© 2026 Hlime Bakery & Pâtisserie</span>
+          <span>VI · KO</span>
         </div>
       </div>
     </footer>

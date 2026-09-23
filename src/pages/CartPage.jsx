@@ -6,6 +6,7 @@ import { useData } from '../context/DataContext';
 import { buildOrderPayload, clearOrderRequestId, submitPublicOrder } from '../lib/orders';
 import { money, textFor } from '../utils/i18n';
 import { clearOrderReceipt, readOrderReceipt, storeOrderReceipt } from '../utils/orderReceipt';
+import { buildVietQrUrl, PAYMENT_METHODS } from '../utils/payment';
 import { isValidVietnamPhone, normalizePhone } from '../utils/phone';
 
 const validationMessages = {
@@ -17,6 +18,7 @@ const validationMessages = {
     dateRequired: 'Vui lòng chọn ngày cần bánh.',
     datePast: 'Ngày cần bánh không được ở trong quá khứ.',
     timeRequired: 'Vui lòng chọn khung giờ.',
+    paymentInvalid: 'Vui lòng chọn một phương thức thanh toán đang được Hlime hỗ trợ.',
     network: 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.',
     submit: 'Không thể gửi đơn hàng. Vui lòng thử lại.',
   },
@@ -28,12 +30,13 @@ const validationMessages = {
     dateRequired: '케이크가 필요한 날짜를 선택해 주세요.',
     datePast: '과거 날짜는 선택할 수 없습니다.',
     timeRequired: '희망 시간대를 선택해 주세요.',
+    paymentInvalid: '현재 이용 가능한 결제 방법을 선택해 주세요.',
     network: '연결할 수 없습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.',
     submit: '주문을 보낼 수 없습니다. 다시 시도해 주세요.',
   },
 };
 
-function validateOrderDraft(orderDraft, minDate) {
+function validateOrderDraft(orderDraft, minDate, enabledPaymentMethods) {
   const errors = {};
   if (!orderDraft.customer_name.trim()) errors.customer_name = 'nameRequired';
   if (!isValidVietnamPhone(orderDraft.customer_phone)) errors.customer_phone = 'phoneInvalid';
@@ -42,6 +45,7 @@ function validateOrderDraft(orderDraft, minDate) {
   if (!orderDraft.order_date) errors.order_date = 'dateRequired';
   else if (orderDraft.order_date < minDate) errors.order_date = 'datePast';
   if (!orderDraft.order_time) errors.order_time = 'timeRequired';
+  if (!enabledPaymentMethods.includes(orderDraft.payment_method)) errors.payment_method = 'paymentInvalid';
   return errors;
 }
 
@@ -62,6 +66,51 @@ function optionSummary(options, locale, celebrationSizes, celebrationFlavors) {
   return values.filter(Boolean).join(' · ');
 }
 
+function OrderReceipt({ receipt, locale, pendingHelp }) {
+  const [qrFailed, setQrFailed] = useState(false);
+  const isBankTransfer = receipt.payment_method === PAYMENT_METHODS.BANK_TRANSFER;
+  const qrUrl = isBankTransfer ? buildVietQrUrl({
+    bankId: receipt.payment_bank_id,
+    accountNo: receipt.payment_account_no,
+    amount: receipt.subtotal_amount,
+    orderCode: receipt.order_code,
+    accountName: receipt.payment_account_name,
+  }) : '';
+  const instruction = locale === 'ko' ? receipt.payment_instruction_ko : receipt.payment_instruction_vi;
+
+  return <section className="payment-receipt" data-testid="order-receipt" aria-live="polite">
+    <div className="payment-receipt__header">
+      <div><p className="eyebrow">{locale === 'ko' ? '주문이 접수되었습니다' : 'Đã tiếp nhận đơn hàng'}</p><h2>{receipt.order_code}</h2></div>
+      <div className="payment-receipt__badges"><span>PENDING</span><span>UNPAID</span></div>
+    </div>
+    <div className="payment-receipt__summary">
+      <div><span>{locale === 'ko' ? '주문 코드' : 'Mã đơn'}</span><strong>{receipt.order_code}</strong></div>
+      <div><span>{locale === 'ko' ? '총 금액' : 'Tổng tiền'}</span><strong>{money(receipt.subtotal_amount)}</strong></div>
+      <div><span>{locale === 'ko' ? '주문 상태' : 'Trạng thái đơn'}</span><strong>{locale === 'ko' ? '확인 대기 (PENDING)' : 'Chờ xác nhận (PENDING)'}</strong></div>
+      <div><span>{locale === 'ko' ? '결제 상태' : 'Trạng thái thanh toán'}</span><strong>{locale === 'ko' ? '미결제 (UNPAID)' : 'Chưa thanh toán (UNPAID)'}</strong></div>
+    </div>
+    {isBankTransfer ? <div className="bank-transfer-receipt">
+      <div className="bank-transfer-receipt__qr">
+        {!qrFailed && qrUrl && <img src={qrUrl} alt={locale === 'ko' ? `${receipt.order_code} 주문 VietQR` : `VietQR cho đơn ${receipt.order_code}`} onError={() => setQrFailed(true)} data-testid="vietqr-image" />}
+        {qrFailed && <div className="qr-fallback">{locale === 'ko' ? 'QR 이미지를 불러오지 못했습니다. 아래 계좌 정보로 직접 이체해 주세요.' : 'Không tải được ảnh QR. Vui lòng chuyển khoản thủ công theo thông tin bên dưới.'}</div>}
+      </div>
+      <div className="bank-transfer-receipt__details">
+        <h3>{locale === 'ko' ? '계좌이체' : 'Chuyển khoản ngân hàng'}</h3>
+        <p>{locale === 'ko' ? 'QR 코드를 스캔해 이체해 주세요. Hlime이 쉽게 확인할 수 있도록 금액과 이체 내용을 변경하지 마세요.' : 'Quét mã QR để chuyển khoản. Vui lòng giữ nguyên số tiền và nội dung chuyển khoản để Hlime dễ đối chiếu.'}</p>
+        {instruction && <p>{instruction}</p>}
+        <dl>
+          <div><dt>{locale === 'ko' ? '은행' : 'Ngân hàng'}</dt><dd>{receipt.payment_bank_name}</dd></div>
+          <div><dt>{locale === 'ko' ? '계좌번호' : 'Số tài khoản'}</dt><dd>{receipt.payment_account_no}</dd></div>
+          <div><dt>{locale === 'ko' ? '예금주' : 'Chủ tài khoản'}</dt><dd>{receipt.payment_account_name}</dd></div>
+          <div><dt>{locale === 'ko' ? '금액' : 'Số tiền'}</dt><dd>{money(receipt.subtotal_amount)}</dd></div>
+          <div><dt>{locale === 'ko' ? '이체 내용' : 'Nội dung chuyển khoản'}</dt><dd>{receipt.order_code}</dd></div>
+        </dl>
+      </div>
+    </div> : <div className="cash-receipt"><strong>{locale === 'ko' ? '수령 시 결제' : 'Thanh toán khi nhận hàng'}</strong><p>{locale === 'ko' ? 'Hlime이 결제 수령을 확인할 때까지 결제 상태는 미결제로 유지됩니다.' : 'Trạng thái thanh toán sẽ là Chưa thanh toán cho tới khi Hlime xác nhận đã nhận tiền.'}</p></div>}
+    <p className="payment-receipt__pending">{pendingHelp}</p>
+  </section>;
+}
+
 export default function CartPage() {
   const {
     locale,
@@ -72,7 +121,6 @@ export default function CartPage() {
     clearCart,
     orderDraft,
     updateOrderDraft,
-    orderStatus,
     setOrderStatus,
     showToast,
   } = useApp();
@@ -84,8 +132,11 @@ export default function CartPage() {
   const minDate = new Date().toISOString().split('T')[0];
   const validItems = cart.map((item, index) => ({ item, index, product: getProduct(item.productId) })).filter((entry) => entry.product);
   const subtotal = validItems.reduce((total, entry) => total + entry.product.price * entry.item.quantity, 0);
-  const receiptStatus = orderReceipt?.order_status || orderStatus;
   const messages = validationMessages[locale];
+  const enabledPaymentMethods = [
+    orderSettings.bank_transfer_enabled ? PAYMENT_METHODS.BANK_TRANSFER : null,
+    orderSettings.cash_enabled ? PAYMENT_METHODS.CASH : null,
+  ].filter(Boolean);
 
   useEffect(() => {
     if (validItems.length && orderReceipt) {
@@ -95,16 +146,24 @@ export default function CartPage() {
     }
   }, [orderReceipt, setOrderStatus, validItems.length]);
 
+  useEffect(() => {
+    if (validItems.length && enabledPaymentMethods.length && !enabledPaymentMethods.includes(orderDraft.payment_method)) {
+      updateOrderDraft('payment_method', enabledPaymentMethods[0]);
+    }
+  }, [enabledPaymentMethods, orderDraft.payment_method, updateOrderDraft, validItems.length]);
+
   const submit = async (event) => {
     event.preventDefault();
     if (!validItems.length) {
       showToast(locale === 'ko' ? '장바구니가 비어 있습니다.' : 'Giỏ hàng đang trống.');
       return;
     }
-    const validationErrors = validateOrderDraft(orderDraft, minDate);
+    const validationErrors = validateOrderDraft(orderDraft, minDate, enabledPaymentMethods);
     if (Object.keys(validationErrors).length) {
       setFieldErrors(validationErrors);
-      event.currentTarget.elements.namedItem(Object.keys(validationErrors)[0])?.focus();
+      const firstInvalid = event.currentTarget.elements.namedItem(Object.keys(validationErrors)[0]);
+      if (typeof firstInvalid?.focus === 'function') firstInvalid.focus();
+      else firstInvalid?.[0]?.focus();
       return;
     }
     setSubmitting(true);
@@ -147,9 +206,9 @@ export default function CartPage() {
     <main id="main-content">
       <section className="page-hero page-hero--compact">
         <div className="container page-hero__inner">
-          <p className="eyebrow">{locale === 'ko' ? 'V1 장바구니' : 'Giỏ hàng V1'}</p>
+          <p className="eyebrow">{locale === 'ko' ? '장바구니' : 'Giỏ hàng'}</p>
           <h1>{locale === 'ko' ? '주문 정보를 작성해 주세요' : 'Hoàn tất thông tin đặt bánh'}</h1>
-          <p>{locale === 'ko' ? '선택한 상품을 확인하고 정보를 입력한 뒤 픽업 또는 배송을 선택하세요. 온라인 결제는 진행되지 않습니다.' : 'Kiểm tra món đã chọn, điền thông tin và chọn nhận tại cửa hàng hoặc giao hàng. Bước này không xử lý thanh toán online.'}</p>
+          <p>{locale === 'ko' ? '선택한 상품을 확인하고 수령 방법과 결제 방법을 선택해 주문 요청을 보내 주세요.' : 'Kiểm tra món đã chọn, điền thông tin, rồi chọn cách nhận bánh và phương thức thanh toán phù hợp.'}</p>
         </div>
       </section>
 
@@ -189,13 +248,7 @@ export default function CartPage() {
               ))}
             </div>
 
-            {!validItems.length && orderReceipt && (
-              <div className="order-status is-visible" aria-live="polite">
-                <strong>{locale === 'ko' ? `상태: ${receiptStatus}` : `Trạng thái: ${receiptStatus}`}</strong>
-                {orderReceipt.order_id ? ` · #${orderReceipt.order_id}` : ''}<br />
-                {textFor(orderSettings.pending_help, locale)}
-              </div>
-            )}
+            {!validItems.length && orderReceipt && <OrderReceipt receipt={orderReceipt} locale={locale} pendingHelp={textFor(orderSettings.pending_help, locale)} />}
 
             {validItems.length > 0 && <form className="order-form" id="frontend-order-form" onSubmit={submit} noValidate>
               <div className="form-section">
@@ -244,6 +297,24 @@ export default function CartPage() {
                   </div>
                 </div>
               </div>
+
+              <div className="form-section">
+                <p className="form-section__number">04</p>
+                <div className="form-section__content">
+                  <h2>{locale === 'ko' ? '결제 방법' : 'Phương thức thanh toán'}</h2>
+                  {enabledPaymentMethods.length ? <div className="choice-grid">
+                    {orderSettings.bank_transfer_enabled && <label className="choice-card">
+                      <input type="radio" name="payment_method" value={PAYMENT_METHODS.BANK_TRANSFER} checked={orderDraft.payment_method === PAYMENT_METHODS.BANK_TRANSFER} onChange={(event) => { updateOrderDraft('payment_method', event.target.value); setFieldErrors((current) => ({ ...current, payment_method: '' })); }} />
+                      <span><strong>{locale === 'ko' ? '계좌이체' : 'Chuyển khoản ngân hàng'}</strong><small>{locale === 'ko' ? '주문 접수 후 동적 VietQR이 표시됩니다.' : 'VietQR động sẽ hiển thị sau khi đơn được tiếp nhận.'}</small></span>
+                    </label>}
+                    {orderSettings.cash_enabled && <label className="choice-card">
+                      <input type="radio" name="payment_method" value={PAYMENT_METHODS.CASH} checked={orderDraft.payment_method === PAYMENT_METHODS.CASH} onChange={(event) => { updateOrderDraft('payment_method', event.target.value); setFieldErrors((current) => ({ ...current, payment_method: '' })); }} />
+                      <span><strong>{locale === 'ko' ? '수령 시 결제' : 'Thanh toán khi nhận hàng'}</strong><small>{locale === 'ko' ? '상품을 받을 때 결제해 주세요.' : 'Thanh toán khi nhận bánh.'}</small></span>
+                    </label>}
+                  </div> : <div className="notice-box notice-box--small">{locale === 'ko' ? '현재 이용 가능한 결제 방법이 없습니다. Hlime에 문의해 주세요.' : 'Hiện chưa có phương thức thanh toán khả dụng. Vui lòng liên hệ Hlime.'}</div>}
+                  {fieldError('payment_method') && <small className="field-error" id="payment-method-error">{fieldError('payment_method')}</small>}
+                </div>
+              </div>
             </form>}
           </div>
 
@@ -253,11 +324,10 @@ export default function CartPage() {
             <div className="summary-row"><span>{locale === 'ko' ? '상품 금액' : 'Tạm tính'}</span><strong>{money(subtotal)}</strong></div>
             <div className="summary-row"><span>{locale === 'ko' ? '배송비' : 'Phí giao hàng'}</span><span>{locale === 'ko' ? '추후 확인' : 'Xác nhận sau'}</span></div>
             <div className="summary-total"><span>{locale === 'ko' ? '예상 합계' : 'Tổng tạm tính'}</span><strong>{money(subtotal)}</strong></div>
-            <div className="notice-box notice-box--small"><strong>{locale === 'ko' ? '현재 결제는 진행되지 않습니다' : 'Không thanh toán ở bước này'}</strong><span>{locale === 'ko' ? '제출 후 주문은 PENDING 상태가 됩니다. Hlime이 연락해 확인한 뒤 CONFIRMED로 변경됩니다.' : 'Sau khi gửi, đơn ở trạng thái PENDING. Hlime sẽ liên hệ xác nhận trước khi chuyển sang CONFIRMED.'}</span></div>
-            <button className="button button--primary button--full" type="submit" form="frontend-order-form" disabled={!validItems.length || submitting}>{submitting ? (locale === 'ko' ? '전송 중…' : 'Đang gửi…') : (locale === 'ko' ? '주문 요청 보내기' : 'Gửi yêu cầu đặt bánh')}</button>
+            <div className="notice-box notice-box--small"><strong>{locale === 'ko' ? '주문 상태와 결제 상태는 별도로 관리됩니다' : 'Trạng thái đơn và thanh toán được quản lý riêng'}</strong><span>{locale === 'ko' ? '주문은 PENDING, 결제는 UNPAID로 접수됩니다. 두 상태는 서로 자동 변경되지 않습니다.' : 'Đơn được tạo ở trạng thái PENDING và thanh toán là UNPAID. Hai trạng thái không tự thay đổi lẫn nhau.'}</span></div>
+            <button className="button button--primary button--full" type="submit" form="frontend-order-form" disabled={!validItems.length || !enabledPaymentMethods.length || submitting}>{submitting ? (locale === 'ko' ? '전송 중…' : 'Đang gửi…') : (locale === 'ko' ? '주문 요청 보내기' : 'Gửi yêu cầu đặt bánh')}</button>
             <p className="form-helper">{textFor(orderSettings.submit_help, locale)}</p>
-            <div className={`order-status${receiptStatus || submitError ? ' is-visible' : ''}${submitError ? ' order-status--error' : ''}`} aria-live="polite">
-              {receiptStatus === 'PENDING' && <><strong>{locale === 'ko' ? '상태: PENDING' : 'Trạng thái: PENDING'}</strong>{orderReceipt?.order_id ? ` · #${orderReceipt.order_id}` : ''}<br />{textFor(orderSettings.pending_help, locale)}</>}
+            <div className={`order-status${submitError ? ' is-visible order-status--error' : ''}`} aria-live="polite">
               {submitError && <><strong>{locale === 'ko' ? '주문을 보내지 못했습니다.' : 'Chưa gửi được đơn hàng.'}</strong><br />{messages[submitError]}<br />{locale === 'ko' ? '장바구니와 입력 정보가 유지되었습니다. 다시 시도해 주세요.' : 'Giỏ hàng và thông tin đã được giữ nguyên. Bạn có thể thử lại.'}</>}
             </div>
           </aside>}

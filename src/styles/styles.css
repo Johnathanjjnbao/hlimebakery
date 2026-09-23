@@ -2243,6 +2243,139 @@ body[data-page='about'] .value-card:nth-child(2) {
   color: #8e3542;
 }
 
+.payment-receipt {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: clamp(1.35rem, 4vw, 2.5rem);
+  border: 1px solid rgba(138, 70, 87, 0.22);
+  border-radius: var(--radius-lg);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-soft);
+}
+
+.payment-receipt__header,
+.payment-receipt__badges,
+.payment-receipt__summary > div,
+.bank-transfer-receipt,
+.bank-transfer-receipt__details dl > div {
+  display: flex;
+}
+
+.payment-receipt__header {
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.payment-receipt__header h2 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+}
+
+.payment-receipt__badges {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.payment-receipt__badges span {
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: #fff0cf;
+  color: #7d561c;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.payment-receipt__summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--line);
+}
+
+.payment-receipt__summary > div {
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem;
+  background: var(--section-surface);
+}
+
+.payment-receipt__summary span,
+.bank-transfer-receipt dt {
+  color: var(--brown-soft);
+  font-size: 0.75rem;
+}
+
+.bank-transfer-receipt {
+  align-items: start;
+  gap: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.bank-transfer-receipt__qr {
+  width: min(100%, 300px);
+  flex: 0 0 min(38%, 300px);
+}
+
+.bank-transfer-receipt__qr img {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+
+.qr-fallback,
+.cash-receipt {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--section-surface);
+  color: var(--brown-soft);
+}
+
+.bank-transfer-receipt__details {
+  min-width: 0;
+  flex: 1;
+}
+
+.bank-transfer-receipt__details h3 {
+  margin-bottom: 0.75rem;
+}
+
+.bank-transfer-receipt__details dl {
+  display: grid;
+  margin: 1.25rem 0 0;
+}
+
+.bank-transfer-receipt__details dl > div {
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.bank-transfer-receipt dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+  text-align: right;
+}
+
+.cash-receipt p,
+.payment-receipt__pending {
+  margin: 0.35rem 0 0;
+}
+
+.payment-receipt__pending {
+  color: var(--brown-soft);
+  font-size: 0.86rem;
+}
+
 .empty-state {
   padding: 4rem 2rem;
   border: 1px solid var(--line);
@@ -2790,6 +2923,25 @@ body[data-page='about'] .value-card:nth-child(2) {
     flex-direction: column;
   }
 
+  .payment-receipt__header,
+  .bank-transfer-receipt {
+    flex-direction: column;
+  }
+
+  .payment-receipt__badges {
+    justify-content: flex-start;
+  }
+
+  .payment-receipt__summary {
+    grid-template-columns: 1fr;
+  }
+
+  .bank-transfer-receipt__qr {
+    width: min(100%, 280px);
+    flex-basis: auto;
+    align-self: center;
+  }
+
   .cta-panel .button-row,
   .cta-panel .button {
     width: 100%;
@@ -3319,6 +3471,7 @@ body[data-page='admin-login'] h1 {
 .admin-status--reviewed,
 .admin-chip--success,
 .admin-chip--confirmed,
+.admin-chip--paid,
 .admin-tag-list span.is-on {
   background: #e3f1e5;
   color: #376043;
@@ -3326,7 +3479,8 @@ body[data-page='admin-login'] h1 {
 
 .admin-status--stale,
 .admin-status--machine,
-.admin-chip--pending {
+.admin-chip--pending,
+.admin-chip--unpaid {
   background: #fff0cf;
   color: #7d561c;
 }
@@ -3505,7 +3659,7 @@ body[data-page='admin-login'] h1 {
 }
 
 .admin-detail-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .admin-list,
@@ -3599,9 +3753,6 @@ body[data-page='admin-login'] h1 {
     grid-template-columns: 1fr 1fr;
   }
 
-  .admin-detail-grid > :last-child {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (max-width: 860px) {

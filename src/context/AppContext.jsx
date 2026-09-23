@@ -22,6 +22,7 @@ const initialOrderDraft = {
   order_date: '',
   order_time: '',
   order_note: '',
+  payment_method: 'CASH',
 };
 
 export function AppProvider({ children }) {

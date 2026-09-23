@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /hlimebakery/admin
+
+Sitemap: https://johnathanjjnbao.github.io/hlimebakery/sitemap.xml

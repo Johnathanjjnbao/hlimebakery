@@ -23,6 +23,13 @@ const defaultOrderSettings = {
   },
   pending_help: { vi: 'Đơn mới đang chờ Hlime xác nhận.', ko: '새 주문이 Hlime 확인을 기다리고 있습니다.' },
   confirmed_help: { vi: 'Hlime đã xác nhận đơn hàng.', ko: 'Hlime이 주문을 확인했습니다.' },
+  bank_transfer_enabled: false,
+  cash_enabled: true,
+  bank_id: '',
+  bank_name: '',
+  bank_account_no: '',
+  bank_account_name: '',
+  payment_instruction: { vi: '', ko: '' },
 };
 
 const demoOptions = {
@@ -122,11 +129,31 @@ function mapSite(row) {
 }
 
 function mapOrderSettings(row) {
-  if (!row) return Object.fromEntries(Object.keys(defaultOrderSettings).map((key) => [key, { vi: '', ko: '' }]));
-  return Object.fromEntries(['pickup_help', 'delivery_help', 'submit_help', 'pending_help', 'confirmed_help'].map((key) => [key, {
+  if (!row) return {
+    ...defaultOrderSettings,
+    pickup_help: { vi: '', ko: '' },
+    delivery_help: { vi: '', ko: '' },
+    submit_help: { vi: '', ko: '' },
+    pending_help: { vi: '', ko: '' },
+    confirmed_help: { vi: '', ko: '' },
+  };
+  const copy = Object.fromEntries(['pickup_help', 'delivery_help', 'submit_help', 'pending_help', 'confirmed_help'].map((key) => [key, {
     vi: row[`${key}_vi`] || '',
     ko: row[`${key}_ko`] || row[`${key}_vi`] || '',
   }]));
+  return {
+    ...copy,
+    bank_transfer_enabled: Boolean(row.bank_transfer_enabled),
+    cash_enabled: Boolean(row.cash_enabled),
+    bank_id: row.bank_id || '',
+    bank_name: row.bank_name || '',
+    bank_account_no: row.bank_account_no || '',
+    bank_account_name: row.bank_account_name || '',
+    payment_instruction: {
+      vi: row.payment_instruction_vi || '',
+      ko: row.payment_instruction_ko || row.payment_instruction_vi || '',
+    },
+  };
 }
 
 function mapOption(row, productById, kind) {

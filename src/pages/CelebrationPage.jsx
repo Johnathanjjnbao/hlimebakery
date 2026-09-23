@@ -42,9 +42,9 @@ export default function CelebrationPage() {
   const editorial = section('editorial');
   const stepsHeader = section('steps-header');
   const steps = [1, 2, 3].map((number) => section(`step-${number}`)).filter(Boolean);
-  const dataNote = dataError
-    ? (locale === 'ko' ? '연결할 수 없습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.' : 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.')
-    : (locale === 'ko' ? '예비 데모 데이터를 사용 중입니다.' : 'Đang dùng dữ liệu demo dự phòng.');
+  const dataNote = locale === 'ko'
+    ? '연결할 수 없습니다. 네트워크 상태를 확인한 후 다시 시도해 주세요.'
+    : 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.';
 
   useEffect(() => {
     if (celebrationSizes.length && !celebrationSizes.some((option) => option.id === celebrationDraft.size)) {
@@ -80,7 +80,7 @@ export default function CelebrationPage() {
               {editorial.image && <DemoImage src={editorial.image} alt={textFor(editorial.title, locale)} />}
               <figcaption><span>{textFor(editorial.eyebrow, locale)}</span><small>{textFor(editorial.title, locale)}</small></figcaption>
             </figure>}
-            {(dataError || source !== 'supabase') && <DemoNote>{dataNote}</DemoNote>}
+            {dataError && <DemoNote>{dataNote}</DemoNote>}
           </div>
 
           <form className="form-card" onSubmit={submit}>
